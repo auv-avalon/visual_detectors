@@ -1,0 +1,23 @@
+<package>
+  <description brief="some visual detectors for several objects">
+  
+  </description>
+  <author>Christoph Mueller/christoph.mueller@dfki.de</author>
+  <license></license>
+  <url>http://</url>
+  <logo>http://</logo>
+ <!--
+   To add any dependencies use the depend tag
+  <depend package="dummy-dependency-0" />
+	...
+  <depend package="dummy-dependency-n-1" />
+  <depend package="dummy-dependency-n" />
+-->
+<depend package="base/types" />
+<depend package="external/opencv" />
+<!--DEPEND-ENTRY-->
+  <versioncontrol type="git" url="" />
+  <export>
+    <cpp cflags="" lflags="" />
+  </export>
+</package>
