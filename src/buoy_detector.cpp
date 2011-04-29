@@ -2,24 +2,35 @@
 
 namespace avalon {
 
+// ---------------------------------------------------------------------------------------
 
-BuoyDetector::BuoyDetector() {
+// module internal constant values
+const unsigned char cCTHue[] = { 0, 0 };
+const unsigned char cCTSat[] = { 255, 0 };
+const unsigned char cCTVal[] = { 255, 0 };
+const CvScalar circleColor = cvScalar(0, 255, 0);
+
+// ---------------------------------------------------------------------------------------
+
+BuoyDetector::BuoyDetector() : satMax(0), valMax(0), 
+        configLowHue(56), configHighHue(200) 
+{
 }
 
 
 BuoyDetector::~BuoyDetector() {
 }
 
+// ---------------------------------------------------------------------------------------
 
-std::vector<BuoyPos> BuoyDetector::detect(IplImage* frame)
+std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
 {
     // Vector for all buoys
-    std::vector<BuoyPos> result;
+    std::vector<feature::Buoy> result;
 
-    /*
     //Original zum HSV-Image umwandeln und dieses glätten.,
-    IplImage* imgAsHSV = cvCreateImage(cvGetSize(imgOriginal), IPL_DEPTH_8U, 3);
-    cvCvtColor(imgOriginal, imgAsHSV, CV_BGR2HSV);
+    IplImage* imgAsHSV = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 3);
+    cvCvtColor(frame, imgAsHSV, CV_BGR2HSV);
     cvSmooth(imgAsHSV, imgAsHSV, CV_GAUSSIAN);
 
     //Werte zum Durchlaufen und Bearbeiten jeden einzelnen Pixel im HSV-Image
@@ -87,7 +98,7 @@ std::vector<BuoyPos> BuoyDetector::detect(IplImage* frame)
 
     //Der höchste Sättigungswert wird wieder auf 0 gestellt.
     satMax = 0;
-    valMax=0;
+    valMax = 0;
 
     //Jeder HSV-Kanal bekommt sein eigenes Image.
     IplImage* h_plane = cvCreateImage(cvGetSize(imgAsHSV), 8, 1);
@@ -106,7 +117,7 @@ std::vector<BuoyPos> BuoyDetector::detect(IplImage* frame)
     cvReleaseImage(&h_plane);
     cvReleaseImage(&s_plane);
     cvReleaseImage(&v_plane);
-    */
+    
     /*
     //Einzeichnen des Kreises
     for (int i = 0; i < (circles ? circles->total : 0); i++) {
@@ -131,8 +142,10 @@ std::vector<BuoyPos> BuoyDetector::detect(IplImage* frame)
     */
 
     // TODO: generate BuoyPos, fill all necessary data and add it to array
+    // feature::Buoy data = feature::Buoy(...);
+    // result.push_back(data);
 
-    //cvReleaseImage(&imgAsHSV);
+    cvReleaseImage(&imgAsHSV);
     
     return result;
 }
@@ -141,7 +154,7 @@ std::vector<BuoyPos> BuoyDetector::detect(IplImage* frame)
 // Ansonsten -1. Weiter wird überprüft, ob dieser Pixel jener mit dem höchsten Sättigungs-Wert ist.
 // Wenn ja, so wird dieser als neuer höchster Wert gesetzt.
 int BuoyDetector::filterByHue(int H, int S, int V) {
-	if (H <= 56 || H >= 200) {
+	if (H <= configLowHue || H >= configHighHue) {
 		satMax = (satMax < S) ? S : satMax;
 		valMax = (valMax < S) ? S : valMax;
 		return -1;
