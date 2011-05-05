@@ -13,7 +13,7 @@ const CvScalar circleColor = cvScalar(0, 255, 0);
 // ---------------------------------------------------------------------------------------
 
 BuoyDetector::BuoyDetector() : satMax(0), valMax(0), 
-        configLowHue(56), configHighHue(200) 
+        configLowHue(56), configHighHue(200)
 {
 }
 
