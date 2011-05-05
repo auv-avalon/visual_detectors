@@ -27,7 +27,6 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
 {
     // Vector for all buoys
     std::vector<feature::Buoy> result;
-    //generates a standard gate detector with a default configuration
     //Original zum HSV-Image umwandeln und dieses glätten.,
     IplImage* imgAsHSV = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 3);
     cvCvtColor(frame, imgAsHSV, CV_BGR2HSV);
