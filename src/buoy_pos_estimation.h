@@ -25,7 +25,7 @@ namespace avalon{
             //and stores it into the buoy itself
             //parameters:
             //buoy        a pointer to a Buoy
-            static void estimateAuvKoordinates(Buoy* buoy);
+            static void estimateAuvKoordinates(Buoy& buoy);
 		
 }
 }

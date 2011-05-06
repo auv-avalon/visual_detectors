@@ -16,6 +16,8 @@
 
 namespace avalon {
 
+typedef std::vector<feature::Buoy> BuoyFeatureVector;
+
 /**
  * Buoydetector for searching possible circles in an image
  */
@@ -40,7 +42,7 @@ class BuoyDetector {
       * @param frame expects an image in the classic opencv format
       * @return a list of all possible found buoys 
       */
-     std::vector<feature::Buoy> detect(IplImage* frame);
+     BuoyFeatureVector detect(IplImage* frame);
 
      /**
       * configure the hue range for buoy extracting in hsv space

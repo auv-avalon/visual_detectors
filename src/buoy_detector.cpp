@@ -161,6 +161,15 @@ int BuoyDetector::filterBySaturation(int H, int S, int V) {
 	}
 }
 
+void BuoyDetector::configHueRange(int low, int high)
+{
+    if(0 <= low && low <= 255)
+        configLowHue = low;
+
+    if(0 <= high && high <= 255)
+        configHighHue = high;
+}
+
 
 } // namespace avalon
 
