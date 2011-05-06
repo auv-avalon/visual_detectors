@@ -117,32 +117,17 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
     cvReleaseImage(&s_plane);
     cvReleaseImage(&v_plane);
     
-    /*
-    //Einzeichnen des Kreises
-    for (int i = 0; i < (circles ? circles->total : 0); i++) {
-        float* circle = (float*) cvGetSeqElem(circles, 0);
+    for(int i = 0; i < (circles ? circles->total : 0); i++) {
+        float* circle = (float*) cvGetSeqElem(circles, i);
+
         int x = circle[0];
         int y = circle[1];
         int r = circle[2];
-        CvPoint location = cvPoint(x, y);
 
-        double radius = getRadius(r);
-        //double radius =r;
-        if (radius != -1
-                && checkLocation(location,radius)
-           ) {
-            if (asOriginal) {
-                cvCircle(imgCopyOriginal, location, radius, circleColor, 4);
-            } else {
-                cvCircle(imgAsHSV, location, radius, circleColor, 4);
-            }
-        }
+        feature::Buoy data(x, y, r);
+
+        result.push_back(data);
     }
-    */
-
-    // TODO: generate BuoyPos, fill all necessary data and add it to array
-    // feature::Buoy data = feature::Buoy(...);
-    // result.push_back(data);
 
     cvReleaseImage(&imgAsHSV);
     
