@@ -1,11 +1,13 @@
 set(SOURCES 
         buoy_detector.cpp
         gate_detector.cpp
+	buoy_pos_estimation.cpp
 )
 
 set(HEADERS
         buoy_detector.h
         gate_detector.h
+	buoy_pos_estimation.h
 )
 
 rock_library(visual_detectors
