@@ -7,10 +7,11 @@
  *     TODO: 
  */
 
-
 #ifndef VISUAL_DETECTORS__BUOY_ESTIMATION_FILTER_H_
 #define VISUAL_DETECTORS__BUOY_ESTIMATION_FILTER_H_
 
+#include <opencv/cv.h>
+#include <list>
 #include "buoy_detector.h"
 
 namespace avalon {
@@ -50,9 +51,28 @@ class BuoyEstimationFilter {
      */
     void feed(const BuoyFeatureVector& vector);
 
- private:
-    std::vector<BuoyFeatureVector> features;
 
+    /**
+     * sets the size of the feature buffer processed by this filter
+     * @param size current size of the buffer
+     */
+     void configureFeatureBufferSize(int size) { 
+         feature_buffer_size = size;
+     }
+
+ private:
+    bool checkLocation(CvPoint location, int radius) const;
+
+    double getAverageRadius() const;
+
+ private:
+    std::list<BuoyFeatureVector> features;
+
+    // maximum number of feature vectors analysed by this filter
+    size_t feature_buffer_size;
+
+    // last location found of a buoy
+    CvPoint last_location;
     // e.g. more logic
 };
 
