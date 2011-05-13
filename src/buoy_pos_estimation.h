@@ -18,14 +18,15 @@ namespace avalon{
 	
     class BuoyPosEstimator{
         private:
-            
+
         public:
-	    
+
             //calculates the position of the buoy relativ to the center of the AUV
             //and stores it into the buoy itself
             //parameters:
             //buoy        a pointer to a Buoy
-            static void estimateAuvKoordinates(Buoy& buoy);
-		
-}
-}
+            static void estimateAuvKoordinates(feature::Buoy& buoy);
+
+    };
+
+} // namespace avalon
