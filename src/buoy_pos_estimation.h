@@ -7,6 +7,7 @@
  */
 
 
+#include <stddef.h>
 #include <cv.h>
 #include <base/samples/frame.h>
 #include <frame_helper/FrameHelperTypes.h>

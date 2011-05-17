@@ -10,6 +10,7 @@
 #ifndef VISUAL_DETECTORS__BUOY_ESTIMATION_FILTER_H_
 #define VISUAL_DETECTORS__BUOY_ESTIMATION_FILTER_H_
 
+#include <stddef.h>
 #include <opencv/cv.h>
 #include <list>
 #include "buoy_detector.h"

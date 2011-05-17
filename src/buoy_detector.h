@@ -12,6 +12,7 @@
 
 #include <avalon_base/feature.h>
 #include <vector>
+#include <stddef.h>
 #include <opencv/cv.h>
 
 namespace avalon {
