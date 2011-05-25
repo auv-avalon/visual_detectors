@@ -2,7 +2,7 @@
 
 namespace avalon {
 
-BuoyEstimationFilter::BuoyEstimationFilter() : feature_buffer_size(5), last_location(cvPoint(-1,-1))
+BuoyEstimationFilter::BuoyEstimationFilter() : feature_buffer_size(2), last_location(cvPoint(-1,-1))
 {
 }
 
