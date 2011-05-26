@@ -39,7 +39,6 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
     int rowSize = imgAsHSV->widthStep;
     char *pixelStart = imgAsHSV->imageData;
 
-    /*
     //1.Runde:
     //Annahme: Alles, was nicht den Farbtönen der Boje entspricht, kann keine Boje sein.
     //Ziel: Jene Pixel, deren Farbtöne, die nicht denen der Boje entsprechen, schwarz einfärben.
@@ -67,13 +66,11 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
             }
         }
     }
-    */
 
     // 2. Runde:
     //Annahme: Boje ist besitzt von den übriggebliebenen "freien" Pixel die höchsten Farbsättigungswerte
     //Ziel: Jene Pixel, deren Sättigungswerte unter einem bestimmten Prozentsatz des zuvor ermittelten
     //höchsten Sättigungswert liegen, werden  schwarz eingefärbt.
-    /* 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
 
@@ -97,7 +94,6 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
             }
         }
     }
-    */
 
     //Der höchste Sättigungswert wird wieder auf 0 gestellt.
     satMax = 0;
@@ -114,10 +110,6 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
             100, 20, 10, 200);
 
     cvReleaseImage(&s_plane);
-
-    if(circles->total > 0) {
-        printf("Found %d circles\n", circles->total);
-    }
 
     for(int i = 0; i < circles->total; i++) {
         float* circle = (float*) cvGetSeqElem(circles, i);
