@@ -7,7 +7,6 @@
  */
 
 
-#include <stddef.h>
 #include <cv.h>
 #include <base/samples/frame.h>
 #include <frame_helper/FrameHelperTypes.h>
@@ -43,6 +42,10 @@ namespace avalon{
             //parameters:
             //buoy        a pointer to a Buoy
             void estimateCWKoordinates(avalon::feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame);
+	    
+	    //transforms the Koordinates wich are relative to the camera 
+	    //relative to the AUV-Center
+	    void transformKoordinates(avalon::feature::Buoy& buoy);
         public:
 
             //calculates the position of the buoy relativ to the center of the AUV

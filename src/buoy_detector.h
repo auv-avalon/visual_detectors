@@ -19,6 +19,7 @@ namespace avalon {
 
 typedef std::vector<feature::Buoy> BuoyFeatureVector;
 
+
 /**
  * Buoydetector for searching possible circles in an image
  */

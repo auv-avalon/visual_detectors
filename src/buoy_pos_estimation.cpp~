@@ -15,7 +15,7 @@ namespace avalon{
 
     base::Vector3d BuoyPosEstimator::estimateAuvKoordinates(feature::Buoy& buoy, base::samples::frame::Frame &frame)
     {
-        frame_helper::FrameHelper& fh = new frame_helper::FrameHelper();
+        frame_helper::FrameHelper fh = frame_helper::FrameHelper();
         //estimate world-koordinates relative to camera
         estimateCWKoordinates(buoy,fh,frame);
         //transfer the koordinates relative to the AUV

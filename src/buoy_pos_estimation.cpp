@@ -11,6 +11,12 @@ namespace avalon{
         buoy.world_coord[1]=point2d.x;
         buoy.world_coord[2]=point2d.y;
     }
+    
+    void transformKoordinates(feature::Buoy& buoy)
+    {
+	//transforms by one meter for now
+       buoy.world_coord[0]=buoy.world_coord[0]-1;
+    }
 
 
     base::Vector3d BuoyPosEstimator::estimateAuvKoordinates(feature::Buoy& buoy, base::samples::frame::Frame &frame)
@@ -20,6 +26,7 @@ namespace avalon{
         estimateCWKoordinates(buoy,fh,frame);
         //transfer the koordinates relative to the AUV
         //TODO:...
+	
 
 
         return buoy.world_coord;

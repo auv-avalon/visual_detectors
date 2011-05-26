@@ -18,12 +18,6 @@
 
 
 
-#include <base/Types.hpp>
-
-  
-
-#include "camera_base/Types.hpp"
-
 namespace avalon{
 	
     class BuoyPosEstimator{
@@ -48,8 +42,12 @@ namespace avalon{
             //parameters:
             //buoy        a pointer to a Buoy
             void estimateCWKoordinates(avalon::feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame);
-        public:
 	    
+	    //transforms the Koordinates wich are relative to the camera 
+	    //relative to the AUV-Center
+	    void transformKoordinates(avalon::feature::Buoy& buoy);
+        public:
+
             //calculates the position of the buoy relativ to the center of the AUV
             //and stores it into the buoy itself
             //parameters:
