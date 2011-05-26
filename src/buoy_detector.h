@@ -29,7 +29,11 @@ class BuoyDetector {
     };
 
  public:
-     /** 
+     enum Channel {
+        HUE, SATURATION, VALUE
+     };
+
+    /** 
       * generates a standard buoy detector with a default configuration
       */
      BuoyDetector();
@@ -47,13 +51,28 @@ class BuoyDetector {
      BuoyFeatureVector detect(IplImage* frame);
 
      /**
-      * configure the hue range for buoy extracting in hsv space
+      * configure the min hue value for buoy extracting in hsv space
       * @param low lower hue value for filterByHue
-      * @param high higher hue value for filterByHue
       */
-     void configHueRange(int low, int high);
+     void configureLowHue(int low);
+
+     /**
+      * configure the max hue value for buoy extracting in hsv space
+      * @param low lower hue value for filterByHue
+      */
+     void configureHighHue(int high);
 
      // TODO: more configuration methods if necessary
+
+ public: 
+     /**
+      * helper function to output a specfic HSV channel. Don't forget
+      * to release the image with cvReleaseImage(&frame)
+      * @param channel type of channel
+      * @param frame a given IplImage
+      */
+     IplImage* getChannel(enum Channel channel, IplImage* hsvframe);
+     IplImage* filterHueChannel(IplImage* hsvframe);
  
  private:
      int filterByHue(int H, int S, int V);
