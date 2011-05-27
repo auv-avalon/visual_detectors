@@ -1,9 +1,16 @@
 #include "buoy_pos_estimation.h"
+#include <iostream>
 
 namespace avalon{
 
     void BuoyPosEstimator::estimateCWKoordinates(feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame)
     {
+	//check if the Frame has fx and fy and set them if not
+	if(!frame.hasAttribute("fx"))
+		frame.setAttribute<long>("fx",fx);
+	if(!frame.hasAttribute("fy"))
+		frame.setAttribute<long>("fy",fy);
+	
         //calculate the distance to buoy (x-koordinate)
         buoy.world_coord[0]=fh.calcDistanceToObject(frame,buoy.image_radius,buoyRadius,buoy.image_radius,buoyRadius);
 	//calculate the y and z koordinate
@@ -26,7 +33,6 @@ namespace avalon{
         estimateCWKoordinates(buoy,fh,frame);
         //transfer the koordinates relative to the AUV
         //TODO:...
-	
 
 
         return buoy.world_coord;
