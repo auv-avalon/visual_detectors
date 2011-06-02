@@ -14,6 +14,7 @@
 #include <opencv/cv.h>
 #include <list>
 #include "buoy_detector.h"
+#include <stdio.h>
 
 namespace avalon {
 
