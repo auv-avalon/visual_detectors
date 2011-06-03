@@ -10,20 +10,18 @@
 #ifndef VISUAL_DETECTORS__BUOY_DETECTOR_H_
 #define VISUAL_DETECTORS__BUOY_DETECTOR_H_
 
-#include <avalon_base/feature.h>
-#include <vector>
 #include <stddef.h>
-#include <opencv/cv.h>
+#include "buoy_interface.h"
 
 namespace avalon {
-
-typedef std::vector<feature::Buoy> BuoyFeatureVector;
 
 
 /**
  * Buoydetector for searching possible circles in an image
+ * Transform an image to HSV Space and uses Hue and Saturation
+ * Channel in order to recognize some circles
  */
-class BuoyDetector {
+class HSVColorBuoyDetector : public BuoyDetector {
     enum {
         cRED, cBLACK, NUM_COLOR_TYPES
     };
@@ -36,12 +34,12 @@ class BuoyDetector {
     /** 
       * generates a standard buoy detector with a default configuration
       */
-     BuoyDetector();
+     HSVColorBuoyDetector();
 
      /**
       * standard destructor for releasing all allocated resources
       */
-     ~BuoyDetector();
+     ~HSVColorBuoyDetector();
 
      /**
       * let this implementation find circles in a given image
@@ -61,6 +59,19 @@ class BuoyDetector {
       * @param low lower hue value for filterByHue
       */
      void configureHighHue(int high);
+
+     /**
+      * configure the threshold using in houghspace accumulator
+      * @param threshold value
+      */
+     void configureHoughThreshold(int threshold) { configEdgeThreshold = threshold; }
+
+     /**
+      * configure the threshold using for edge detection
+      * @param threshold value
+      */
+     void configureEdgeThreshold(int threshold) { configHoughThreshold = threshold; }
+     
 
      // TODO: more configuration methods if necessary
 
@@ -84,6 +95,8 @@ class BuoyDetector {
 
      int configLowHue;
      int configHighHue;
+     int configHoughThreshold;
+     int configEdgeThreshold;
 };
 
 } // namespace avalon

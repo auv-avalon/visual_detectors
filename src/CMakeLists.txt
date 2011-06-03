@@ -6,6 +6,7 @@ set(SOURCES
 )
 
 set(HEADERS
+        buoy_interface.h
         buoy_detector.h
         gate_detector.h
         buoy_estimation_filter.h

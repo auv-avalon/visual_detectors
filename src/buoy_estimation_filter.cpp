@@ -14,7 +14,7 @@ BuoyEstimationFilter::~BuoyEstimationFilter()
 
 // --------------------------------------------------------------------------------------
 
-bool BuoyEstimationFilter::hasBuoyFound() const 
+bool BuoyEstimationFilter::isBuoyFound() const 
 {
     std::list<BuoyFeatureVector>::const_iterator it;
 
@@ -37,8 +37,9 @@ bool BuoyEstimationFilter::hasBuoyFound() const
 
 
 
-feature::Buoy BuoyEstimationFilter::getBestFeature() const
+BuoyFeatureVector BuoyEstimationFilter::process()
 {
+    BuoyFeatureVector vector;
     int MAX_DIST = 100;
     int MIN_NEIGHBORS = 1;
     
@@ -48,7 +49,6 @@ feature::Buoy BuoyEstimationFilter::getBestFeature() const
     int neighbors = 0;
 
     const feature::Buoy *best_buoy; //Return Bouy
-
     
     for (std::list<BuoyFeatureVector>::const_iterator it = features.begin(); it != features.end(); it++ )
     {
@@ -77,8 +77,9 @@ feature::Buoy BuoyEstimationFilter::getBestFeature() const
     double radius = getAverageRadius(); //KA Was das macht ich benutze das nicht
 
     //last_buoy.image_radius = radius;
+    vector.push_back(*best_buoy);
 
-    return *best_buoy;
+    return vector;
 }
 
 

@@ -13,18 +13,19 @@ const CvScalar circleColor = cvScalar(0, 255, 0);
 
 // ---------------------------------------------------------------------------------------
 
-BuoyDetector::BuoyDetector() : satMax(0), valMax(0), 
-        configLowHue(56), configHighHue(200)
+HSVColorBuoyDetector::HSVColorBuoyDetector() : satMax(0), valMax(0), 
+        configLowHue(56), configHighHue(200), configHoughThreshold(100),
+        configEdgeThreshold(200)
 {
 }
 
 
-BuoyDetector::~BuoyDetector() {
+HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 }
 
 // ---------------------------------------------------------------------------------------
 
-std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
+std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame)
 {
     // Vector for all buoys
     std::vector<feature::Buoy> result;
@@ -71,6 +72,7 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
     //Annahme: Boje ist besitzt von den übriggebliebenen "freien" Pixel die höchsten Farbsättigungswerte
     //Ziel: Jene Pixel, deren Sättigungswerte unter einem bestimmten Prozentsatz des zuvor ermittelten
     //höchsten Sättigungswert liegen, werden  schwarz eingefärbt.
+    /*
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
 
@@ -93,23 +95,31 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
                 *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 2) = V;
             }
         }
-    }
+    }*/
 
     //Der höchste Sättigungswert wird wieder auf 0 gestellt.
     satMax = 0;
     valMax = 0;
 
     //Jeder HSV-Kanal bekommt sein eigenes Image.
-    IplImage* s_plane = getChannel(SATURATION, imgAsHSV);
+    IplImage* s_plane = getChannel(HUE, imgAsHSV);
+    IplImage* dil = cvCreateImage(cvGetSize(s_plane), 8, 1);
+
+    cvEqualizeHist(s_plane, s_plane);
+    
+    cvDilate(s_plane, dil, NULL, 2);
 
     //Über das Image für die Sättigung werden (nachdem es nocheinmal übern Gauss-Filter geglättet wurde)
     //die Kreise ermittelt und in das HSV-Image eingezeichnet.
     CvMemStorage* storage = cvCreateMemStorage(0);
-    cvSmooth(s_plane, s_plane, CV_GAUSSIAN, 9, 9);
-    CvSeq* circles = cvHoughCircles(s_plane, storage, CV_HOUGH_GRADIENT, 2, imgAsHSV->height,
-            100, 20, 10, 200);
+
+    cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
+    //cvSmooth(s_plane, s_plane, CV_GAUSSIAN, 13, 13);
+
+    CvSeq* circles = cvHoughCircles(dil, storage, CV_HOUGH_GRADIENT, 2, imgAsHSV->width / 3, configEdgeThreshold, configHoughThreshold);
 
     cvReleaseImage(&s_plane);
+    cvReleaseImage(&dil);
 
     for(int i = 0; i < circles->total; i++) {
         float* circle = (float*) cvGetSeqElem(circles, i);
@@ -129,7 +139,7 @@ std::vector<feature::Buoy> BuoyDetector::detect(IplImage* frame)
 }
 
 
-inline IplImage* BuoyDetector::getChannel(Channel channel, IplImage* hsvframe)
+inline IplImage* HSVColorBuoyDetector::getChannel(Channel channel, IplImage* hsvframe)
 {
     IplImage* h_plane = cvCreateImage(cvGetSize(hsvframe), 8, 1);
     IplImage* s_plane = cvCreateImage(cvGetSize(hsvframe), 8, 1);
@@ -163,40 +173,30 @@ inline IplImage* BuoyDetector::getChannel(Channel channel, IplImage* hsvframe)
 }
 
 
-IplImage* BuoyDetector::filterHueChannel(IplImage* imgAsHSV)
+IplImage* HSVColorBuoyDetector::filterHueChannel(IplImage* imgAsHSV)
 {    
-    //Werte zum Durchlaufen und Bearbeiten jeden einzelnen Pixel im HSV-Image
-    int height = imgAsHSV->height;
-    int width = imgAsHSV->width;
-    int rowSize = imgAsHSV->widthStep;
-    char *pixelStart = imgAsHSV->imageData;
+    uchar *p, *pEnd, *pLine;
 
-    //1.Runde:
-    //Annahme: Alles, was nicht den Farbtönen der Boje entspricht, kann keine Boje sein.
-    //Ziel: Jene Pixel, deren Farbtöne, die nicht denen der Boje entsprechen, schwarz einfärben.
-    //Alle anderen behalten ihre Werte. Weiter wird jener Wert mit der höchsten Farbsättigung ermittelt.
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    pLine = (uchar*) imgAsHSV->imageData;
 
-            uchar H = *(uchar*) (pixelStart + y * rowSize + x * 3 + 0); // Hue
-            uchar S = *(uchar*) (pixelStart + y * rowSize + x * 3 + 1); // Saturation
-            uchar V = *(uchar*) (pixelStart + y * rowSize + x * 3 + 2); // Value (Brightness)
+    for (int y = 0; y < imgAsHSV->height; y++) {
+        for (p = pLine, pEnd = p + (imgAsHSV->width * imgAsHSV->nChannels);
+             p < pEnd;
+             p += imgAsHSV->nChannels) 
+        {
 
-            int ctype = filterByHue(H, S, V);
+            uchar H = *(p + 0); // Hue
+            uchar S = *(p + 1); // Saturation
+            uchar V = *(p + 2); // Value
 
-            if (ctype == cBLACK) {
-                *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 0)
-                    = cCTHue[ctype];
-                *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 1)
-                    = cCTSat[ctype];
-                *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 2)
-                    = cCTVal[ctype];
-            } else {
-                *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 0) = H;
-                *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 1) = S;
-                *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 2) = V;
-            }
+            int color = filterByHue(H, S, V);
+
+            *(p + 0) = cCTHue[color];
+            *(p + 1) = cCTSat[color];
+            *(p + 2) = cCTVal[color];
+
         }
+        pLine += imgAsHSV->widthStep / sizeof(uchar);
     }
 
     return imgAsHSV;
@@ -206,11 +206,11 @@ IplImage* BuoyDetector::filterHueChannel(IplImage* imgAsHSV)
 // Wenn der Farbton nicht einen derer der Boje entspricht, wird enum schwarz ausgegeben.
 // Ansonsten -1. Weiter wird überprüft, ob dieser Pixel jener mit dem höchsten Sättigungs-Wert ist.
 // Wenn ja, so wird dieser als neuer höchster Wert gesetzt.
-int BuoyDetector::filterByHue(int H, int S, int V) {
+int HSVColorBuoyDetector::filterByHue(int H, int S, int V) {
 	if (H <= configLowHue || H >= configHighHue) {
 		satMax = (satMax < S) ? S : satMax;
 		valMax = (valMax < S) ? S : valMax;
-		return -1;
+		return cRED;
 	} else {
 		return cBLACK;
 	}
@@ -218,7 +218,7 @@ int BuoyDetector::filterByHue(int H, int S, int V) {
 
 //Jene Pixel, deren Sättigungswerte unter einem bestimmten Prozentsatz des zuvor ermittelten
 //höchsten Sättigungswert liegen, werden  schwarz eingefärbt. Alle Anderen rot.
-int BuoyDetector::filterBySaturation(int H, int S, int V) {
+int HSVColorBuoyDetector::filterBySaturation(int H, int S, int V) {
 	if ((S > (255 / (double) 100) * 20)
 //||(S > (valMax / (double) 100) * 10)
 ) {
@@ -230,13 +230,13 @@ int BuoyDetector::filterBySaturation(int H, int S, int V) {
 	}
 }
 
-void BuoyDetector::configureLowHue(int low)
+void HSVColorBuoyDetector::configureLowHue(int low)
 {
     if(0 <= low && low <= 255)
         configLowHue = low;
 }
 
-void BuoyDetector::configureHighHue(int high)
+void HSVColorBuoyDetector::configureHighHue(int high)
 {
     if(0 <= high && high <= 255)
         configHighHue = high;

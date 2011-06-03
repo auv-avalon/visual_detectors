@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <opencv/cv.h>
 #include <list>
-#include "buoy_detector.h"
+#include "buoy_interface.h"
 #include <stdio.h>
 
 namespace avalon {
@@ -22,7 +22,7 @@ namespace avalon {
  * A Buoy estimation filter who is searching the best possible
  * match of a buoy in a given set of feature vectors over the time.
  */
-class BuoyEstimationFilter {
+class BuoyEstimationFilter : public BuoyFilter {
  
  public:
     /** 
@@ -39,13 +39,13 @@ class BuoyEstimationFilter {
      * has the filter already found a buoy in a given data source (feature vectors)
      * @return true if a real buoy is detected
      */
-    bool hasBuoyFound() const;
+    bool isBuoyFound() const;
 
     /**
      * returns the feature of the best possible recognized buoy for a given set of data
      * @return buoy feature of the best possible match
      */
-    feature::Buoy getBestFeature() const;
+    BuoyFeatureVector process();
 
     /**
      * add feature vector to this filter in order to estimate the best possible match
