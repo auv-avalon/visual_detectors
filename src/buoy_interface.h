@@ -50,6 +50,11 @@ class BuoyFilter {
 class BuoyDetector {
  public:
      virtual BuoyFeatureVector detect(IplImage* image) = 0;
+
+     inline static void draw(IplImage* image, const feature::Buoy& buoy) {
+         cvCircle(image, cvPoint(buoy.image_x, buoy.image_y), buoy.image_radius, 
+                 CV_RGB(255, 0, 0));
+     }
 };
 
 
