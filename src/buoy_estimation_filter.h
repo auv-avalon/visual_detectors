@@ -69,6 +69,7 @@ class BuoyEstimationFilter : public BuoyFilter {
 
  private:
     std::list<BuoyFeatureVector> features;
+    std::list<BuoyFeatureVector> features_history;
 
     // maximum number of feature vectors analysed by this filter
     size_t feature_buffer_size;

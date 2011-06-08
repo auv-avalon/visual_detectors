@@ -16,21 +16,21 @@ BuoyEstimationFilter::~BuoyEstimationFilter()
 
 bool BuoyEstimationFilter::isBuoyFound() const 
 {
-    std::list<BuoyFeatureVector>::const_iterator it;
-
-    if( features.size() == feature_buffer_size ) {
-        double radius = getAverageRadius();
-
-        for(it = features.begin(); it != features.end(); it++) {
-            const feature::Buoy buoy = it->front();
-            CvPoint location = cvPoint(buoy.image_x, buoy.image_y);
-
-            if( !checkLocation(location, radius) )
-                return false;
-        }
-
-        return true;
-    }
+//     std::list<BuoyFeatureVector>::const_iterator it;
+// 
+//     if( features.size() == feature_buffer_size ) {
+//         double radius = getAverageRadius();
+// 
+//         for(it = features.begin(); it != features.end(); it++) {
+//             const feature::Buoy buoy = it->front();
+//             CvPoint location = cvPoint(buoy.image_x, buoy.image_y);
+// 
+//             if( !checkLocation(location, radius) )
+//                 return false;
+//         }
+// 
+//         return true;
+//     }
 
     return false;
 }
@@ -92,6 +92,18 @@ void BuoyEstimationFilter::feed(const BuoyFeatureVector& vector)
     last_location = cvPoint(vector.front().image_x, vector.front().image_y);
 
     features.push_back(vector);
+    
+    
+    //feed History
+    while (features.size() > 0)
+    {
+      features_history.push_back(features.pop_front());
+    }
+    //Remove old
+    while (features_history.size() > 20)
+    {
+      features_history.pop_front();
+    }
 }
 
 
