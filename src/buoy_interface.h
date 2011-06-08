@@ -25,12 +25,6 @@ typedef std::vector<feature::Buoy> BuoyFeatureVector;
  */
 class BuoyFilter {
  public:
-    /* 
-     * has the filter already found a buoy in a given data source (feature vectors)
-     * @return true if a real buoy is detected
-     */
-    virtual bool isBuoyFound() const = 0;
-
     /**
      * returns a new buoy feature vector with a reduced false positives / negatives rate
      * @return improved buoy feature vector
