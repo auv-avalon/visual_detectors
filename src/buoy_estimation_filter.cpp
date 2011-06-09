@@ -97,7 +97,8 @@ void BuoyEstimationFilter::feed(const BuoyFeatureVector& vector)
     //feed History
     while (features.size() > 0)
     {
-      features_history.push_back(features.pop_front());
+      features_history.push_back(features.front());
+      features.pop_front();
     }
     //Remove old
     while (features_history.size() > 20)
