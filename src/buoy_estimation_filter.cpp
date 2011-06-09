@@ -43,41 +43,27 @@ BuoyFeatureVector BuoyEstimationFilter::process()
     int MAX_DIST = 100;
     int MIN_NEIGHBORS = 1;
     
-
-    int x = features.back().front().image_x;
-    int y = features.back().front().image_y;
-    int neighbors = 0;
-
-    const feature::Buoy *best_buoy; //Return Bouy
-    
-    for (std::list<BuoyFeatureVector>::const_iterator it = features.begin(); it != features.end(); it++ )
-    {
-      if(it->begin()->image_x < x + MAX_DIST && it->begin()->image_x > x - MAX_DIST)
-      {
-        if(it->begin()->image_y < y + MAX_DIST && it->begin()->image_y > y - MAX_DIST)
+    for (std::list<BuoyFeatureVector>::const_iterator newBuoy = features.begin(); newBuoy != features.end(); newBuoy++) {
+        int neighbors = 0;
+        int x = newBuoy->begin()->image_x;
+        int y = newBuoy->begin()->image_y;
+        for (std::list<BuoyFeatureVector>::const_iterator oldBuoy = features_history.begin(); oldBuoy != features_history.end(); oldBuoy++ )
         {
-          neighbors += 1;
+            if (oldBuoy->begin()->image_x < x + MAX_DIST && oldBuoy->begin()->image_x > x - MAX_DIST)
+            {
+                if (oldBuoy->begin()->image_y < y + MAX_DIST && oldBuoy->begin()->image_y > y - MAX_DIST)
+                {
+                    neighbors += 1;
+                }
+            }
         }
-      }
-//         if (it->begin()->image_x > x && it->begin()->image_y > y)
-//         {
-//             best_buoy =  &it->front();
-//             printf("o%d", it->front().image_x);
-//         }
+        //Add Buoy to Vector
+        if (neighbors > MIN_NEIGHBORS) {
+            vector.push_back(newBuoy->front());
+        }
     }
 
-    if (neighbors > MIN_NEIGHBORS){
-      best_buoy = &features.back().front();
-    }
-
-//     std::cout << "test";
-    
-    //feature::Buoy best_buoy = features.back().front();
-
-    double radius = getAverageRadius(); //KA Was das macht ich benutze das nicht
-
-    //last_buoy.image_radius = radius;
-    vector.push_back(*best_buoy);
+    //double radius = getAverageRadius(); //KA Was das macht ich benutze das nicht
 
     return vector;
 }
