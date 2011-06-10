@@ -40,7 +40,7 @@ bool BuoyEstimationFilter::isBuoyFound() const
 BuoyFeatureVector BuoyEstimationFilter::process()
 {
     BuoyFeatureVector vector;
-    double MAX_DIST = 10000.0;
+    double MAX_DIST = 25.0;
 
     if(features_history.size() <= 1)
         return vector;
