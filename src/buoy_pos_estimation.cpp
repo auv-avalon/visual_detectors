@@ -2,7 +2,6 @@
 #include <iostream>
 
 namespace avalon{
-
     void BuoyPosEstimator::estimateCWKoordinates(feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame)
     {
 	//check if the Frame has fx and fy and set them if not
@@ -33,7 +32,6 @@ namespace avalon{
         estimateCWKoordinates(buoy,fh,frame);
         //transfer the koordinates relative to the AUV
         //TODO:...
-
 
         return buoy.world_coord;
     }

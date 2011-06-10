@@ -39,18 +39,37 @@ bool BuoyEstimationFilter::isBuoyFound() const
 
 BuoyFeatureVector BuoyEstimationFilter::process()
 {
-    printf("Wasser1 %d", features.size());
     BuoyFeatureVector vector;
-    int MAX_DIST = 10000;
-    int MIN_NEIGHBORS = 0;
-    
-    
+    double MAX_DIST = 10000.0;
+
+    if(features_history.size() <= 1)
+        return vector;
+
+    BuoyFeatureVector::const_iterator current, past;
+    BuoyFeatureVector& current_sample = features_history.front();
+    BuoyFeatureVector& past_sample = features_history.back();
+
+    for(current = current_sample.begin(); current != current_sample.end(); current++)
+    {
+        for(past = past_sample.begin(); past != past_sample.end(); past++) {
+            int x = current->image_x - past->image_x;
+            int y = current->image_y - past->image_y;
+
+            double amount = sqrt( x * x + y * y);
+
+            if(amount < MAX_DIST) {
+                vector.push_back(*current);
+            }
+        }
+    }
+   
+    /*
     for (std::list<BuoyFeatureVector>::const_iterator newBuoy = features.begin(); newBuoy != features.end(); ++newBuoy) {
         int neighbors = 0;
         int x = newBuoy->begin()->image_x;
         int y = newBuoy->begin()->image_y;
-        printf("wer %d%d%d%d%d", neighbors, x, y, features_history.begin()->begin()->image_x, features_history.begin()->begin()->image_y);
-        for (std::list<BuoyFeatureVector>::const_iterator oldBuoy = features_history.begin(); oldBuoy != features_history.end(); oldBuoy++ )
+        
+        for (std::list<BuoyFeatureVector>::const_iterator oldBuoy = features_history.begin(); oldBuoy != features_history.end(); oldBuoy++)
         {
             if (oldBuoy->begin()->image_x < x + MAX_DIST && oldBuoy->begin()->image_x > x - MAX_DIST)
             {
@@ -60,13 +79,13 @@ BuoyFeatureVector BuoyEstimationFilter::process()
                 }
             }
         }
+    
         //Add Buoy to Vector
         if (neighbors > MIN_NEIGHBORS) {
-          printf("Wasser");
             feature::Buoy best_buoy = *newBuoy->begin();
             vector.push_back(best_buoy);
         }
-    }
+    }*/
 
     //double radius = getAverageRadius(); //KA Was das macht ich benutze das nicht
 //     feature::Buoy best_buoy = features.back().front();
@@ -78,26 +97,10 @@ BuoyFeatureVector BuoyEstimationFilter::process()
 
 void BuoyEstimationFilter::feed(const BuoyFeatureVector& vector) 
 {
-    if(features.size() > feature_buffer_size) 
-        features.pop_front();
-
-    last_location = cvPoint(vector.front().image_x, vector.front().image_y);
-
-    features.push_back(vector);
-
-
-    
-    //feed History
-    while (features.size() > 0)
-    {
-        features_history.push_back(features.front());
-        features.pop_front();
-    }
-    //Remove old
-    while (features_history.size() > 20)
-    {
+    if(features_history.size() >= feature_buffer_size) 
         features_history.pop_front();
-    }
+
+    features_history.push_back(vector);
 }
 
 
