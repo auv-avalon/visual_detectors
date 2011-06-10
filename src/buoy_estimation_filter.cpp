@@ -32,21 +32,24 @@ bool BuoyEstimationFilter::isBuoyFound() const
 //         return true;
 //     }
 
-    return false;
+    return true;
 }
 
 
 
 BuoyFeatureVector BuoyEstimationFilter::process()
 {
+    printf("Wasser1 %d", features.size());
     BuoyFeatureVector vector;
-    int MAX_DIST = 100;
-    int MIN_NEIGHBORS = 1;
+    int MAX_DIST = 10000;
+    int MIN_NEIGHBORS = 0;
     
-    for (std::list<BuoyFeatureVector>::const_iterator newBuoy = features.begin(); newBuoy != features.end(); newBuoy++) {
+    
+    for (std::list<BuoyFeatureVector>::const_iterator newBuoy = features.begin(); newBuoy != features.end(); ++newBuoy) {
         int neighbors = 0;
         int x = newBuoy->begin()->image_x;
         int y = newBuoy->begin()->image_y;
+        printf("wer %d%d%d%d%d", neighbors, x, y, features_history.begin()->begin()->image_x, features_history.begin()->begin()->image_y);
         for (std::list<BuoyFeatureVector>::const_iterator oldBuoy = features_history.begin(); oldBuoy != features_history.end(); oldBuoy++ )
         {
             if (oldBuoy->begin()->image_x < x + MAX_DIST && oldBuoy->begin()->image_x > x - MAX_DIST)
@@ -59,12 +62,15 @@ BuoyFeatureVector BuoyEstimationFilter::process()
         }
         //Add Buoy to Vector
         if (neighbors > MIN_NEIGHBORS) {
-            vector.push_back(newBuoy->front());
+          printf("Wasser");
+            feature::Buoy best_buoy = *newBuoy->begin();
+            vector.push_back(best_buoy);
         }
     }
 
     //double radius = getAverageRadius(); //KA Was das macht ich benutze das nicht
-
+//     feature::Buoy best_buoy = features.back().front();
+//     vector.push_back(best_buoy);
     return vector;
 }
 
@@ -78,18 +84,19 @@ void BuoyEstimationFilter::feed(const BuoyFeatureVector& vector)
     last_location = cvPoint(vector.front().image_x, vector.front().image_y);
 
     features.push_back(vector);
-    
+
+
     
     //feed History
     while (features.size() > 0)
     {
-      features_history.push_back(features.front());
-      features.pop_front();
+        features_history.push_back(features.front());
+        features.pop_front();
     }
     //Remove old
     while (features_history.size() > 20)
     {
-      features_history.pop_front();
+        features_history.pop_front();
     }
 }
 
