@@ -23,7 +23,7 @@ namespace avalon{
     class BuoyPosEstimator{
         private:
             //der Radius der Boje
-            static const float buoyRadius=0.3;
+            static const float buoyRadius=0.2;
             //die Brennweite der Kamera
             static const float fx=1000;		//TODO: Echte Werte heraus finden
             static const float fy=1000;
