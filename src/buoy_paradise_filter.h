@@ -74,7 +74,7 @@ class BuoyParadiseFilter : public BuoyFilter
     BuoyFeatureVector buoys_buffer;
 
     // maximum number of buoys analysed by this filter
-    int buoys_buffer_size;
+    unsigned int buoys_buffer_size;
 
     // minimum number of buoys to stay in the buffer
     int buoys_buffer_size_min;

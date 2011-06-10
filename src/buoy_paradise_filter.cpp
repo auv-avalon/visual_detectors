@@ -113,6 +113,11 @@ void BuoyParadiseFilter::feed(const BuoyFeatureVector& vector)
             break;
         }
     }  
+    //entfernen alter buoys
+    while(buoys_buffer.size()>buoys_buffer_size)
+    {
+        buoys_buffer.pop_back();
+    }
 }
 
 } // namespace avalon
