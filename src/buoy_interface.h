@@ -45,9 +45,9 @@ class BuoyDetector {
  public:
      virtual BuoyFeatureVector detect(IplImage* image) = 0;
 
-     inline static void draw(IplImage* image, const feature::Buoy& buoy) {
+     inline static void draw(IplImage* image, const feature::Buoy& buoy, const CvScalar& scalar) {
          cvCircle(image, cvPoint(buoy.image_x, buoy.image_y), buoy.image_radius, 
-                 CV_RGB(255, 0, 0));
+                 scalar);
      }
 };
 
