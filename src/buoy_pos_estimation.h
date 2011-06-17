@@ -25,8 +25,8 @@ namespace avalon{
             //der Radius der Boje
             static const float buoyRadius=0.2;
             //die Brennweite der Kamera
-            static const float fx=1000;		//TODO: Echte Werte heraus finden
-            static const float fy=1000;
+            static const float fx=815;		//TODO: Echte Werte heraus finden
+            static const float fy=765;
 
 		//woher kriege ich fx und fy???
 		//woher hat alex die pixel-breite auf dem die
