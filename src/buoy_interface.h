@@ -49,6 +49,14 @@ class BuoyDetector {
          cvCircle(image, cvPoint(buoy.image_x, buoy.image_y), buoy.image_radius, 
                  scalar);
      }
+     inline static void drawGreen(IplImage* image, const feature::Buoy& buoy) {
+         cvCircle(image, cvPoint(buoy.image_x, buoy.image_y), buoy.image_radius, 
+                 CV_RGB(0, 255, 0));
+     }
+     inline static void drawRed(IplImage* image, const feature::Buoy& buoy) {
+         cvCircle(image, cvPoint(buoy.image_x, buoy.image_y), buoy.image_radius, 
+                 CV_RGB(0, 0, 255));
+     }
 };
 
 

@@ -22,6 +22,10 @@ rock_library(visual_detectors
     HEADERS ${HEADERS}
 )
 
-#rock_executable(visual_detectors_bin main.cpp
-#    DEPS visual_detectors)
+rock_executable(visual_detectors_bin main.cpp
+    DEPS visual_detectors
+    DEPS_PKGCONFIG opencv
+    DEPS_PKGCONFIG avalon_base-types
+    DEPS_PKGCONFIG frame_helper
+)
 
