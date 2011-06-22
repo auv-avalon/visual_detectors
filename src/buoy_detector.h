@@ -72,7 +72,12 @@ class HSVColorBuoyDetector : public BuoyDetector {
       */
      void configureEdgeThreshold(int threshold) { configHoughThreshold = threshold; }
      
-
+     /**
+     * compute two orthogonal linear regressions in order to convert 
+     * any arbitrary image into a flat background image without any 
+     * pictorial content.
+     */
+     void shadingRGB(IplImage* src, IplImage* dest);
      // TODO: more configuration methods if necessary
 
  public: 

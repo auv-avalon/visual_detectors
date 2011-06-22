@@ -220,8 +220,8 @@ int HSVColorBuoyDetector::filterByHue(int H, int S, int V) {
 //höchsten Sättigungswert liegen, werden  schwarz eingefärbt. Alle Anderen rot.
 int HSVColorBuoyDetector::filterBySaturation(int H, int S, int V) {
 	if ((S > (255 / (double) 100) * 20)
-//||(S > (valMax / (double) 100) * 10)
-) {
+	//||(S > (valMax / (double) 100) * 10)
+	) {
 		//return cRED;
 		return -1;
 
@@ -230,18 +230,131 @@ int HSVColorBuoyDetector::filterBySaturation(int H, int S, int V) {
 	}
 }
 
-void HSVColorBuoyDetector::configureLowHue(int low)
-{
-    if(0 <= low && low <= 255)
-        configLowHue = low;
+void HSVColorBuoyDetector::configureLowHue(int low) {
+	if (0 <= low && low <= 255)
+		configLowHue = low;
 }
 
-void HSVColorBuoyDetector::configureHighHue(int high)
-{
-    if(0 <= high && high <= 255)
-        configHighHue = high;
+void HSVColorBuoyDetector::configureHighHue(int high) {
+	if (0 <= high && high <= 255)
+		configHighHue = high;
 }
 
+void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
+
+	int height = src->height;
+	int width = src->width;
+	int rowSize = src->widthStep;
+	char *pixelStart = src->imageData;
+
+	float a0[3][height][width], slope[3][2][width], y0[3][2][width], mean[3],
+			sum[3], sxy[3], sx2, mid, factor[3];
+	int a1[3][height][width], min[3], max[3];
+
+	// grab the rgb values
+
+	for (int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+			a0[0][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
+			a0[1][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
+			a0[2][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
+		}
+	}
+
+	//regression 1: compute the regression line of any column
+	mid = height / (float) 2;
+	for (int x = 0; x < width; x++) {
+		for (int z = 0; z < 3; z++) {
+			sum[z] = 0;
+		}
+		for (int y = 0; y < height; y++) {
+			for (int z = 0; z < 3; z++) {
+				sum[z] += (int) a0[z][y][x];
+			}
+		}
+		for (int z = 0; z < 3; z++) {
+			mean[z] = sum[z] / height;
+			sxy[z] = 0;
+		}
+		sx2 = 0;
+		for (int y = 0; y < height; y++) {
+			for (int z = 0; z < 3; z++) {
+				sxy[z] += (y - mid) * a0[z][y][x] - mean[z];
+			}
+			sx2 += (y - mid) * (y - mid);
+		}
+		for (int z = 0; z < 3; z++) {
+			slope[z][1][x] = sxy[z] / sx2;
+			y0[z][1][x] = mean[z] - slope[z][1][x] * mid;
+		}
+	}
+
+	//regression 2: compute the regression line of any row
+	mid = width / (float) 2;
+	for (int y = 0; y < height; y++) {
+		for (int z = 0; z < 3; z++) {
+			sum[z] = 0;
+		}
+		for (int x = 0; x < width; x++) {
+			for (int z = 0; z < 3; z++) {
+				sum[z] += slope[z][1][x] * y + y0[z][1][x];
+			}
+		}
+		for (int z = 0; z < 3; z++) {
+			mean[z] = sum[z] / width;
+			sxy[z] = 0;
+		}
+		sx2 = 0;
+		for (int x = 0; x < width; x++) {
+			for (int z = 0; z < 3; z++) {
+				sxy[z] += (x - mid) * (slope[z][1][x] * y + y0[z][1][x]
+						- mean[z]);
+			}
+			sx2 += (x - mid) * (x - mid);
+		}
+		for (int z = 0; z < 3; z++) {
+			slope[z][0][y] = sxy[z] / sx2;
+			y0[z][0][y] = mean[z] - slope[z][0][y] * mid;
+		}
+	}
+
+	//shading correction: subtract the flat background image from the
+	//original and rearrange the resulting RGB values between 0 to 255
+	for (int z = 0; z < 3; z++) {
+		min[z] = 255;
+		max[z] = 0;
+	}
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			for (int z = 0; z < 3; z++) {
+				a1[z][y][x] = (int) (a0[z][y][x] - (slope[z][0][y] * x
+						+ y0[z][0][y]));
+				min[z] = (a1[z][y][x] < min[z]) ? a1[z][y][x] : min[z];
+				max[z] = (a1[z][y][x] > max[z]) ? a1[z][y][x] : max[z];
+			}
+		}
+	}
+	for (int z = 0; z < 3; z++) {
+		factor[z] = 255 / (float) (max[z] - min[z]);
+	}
+	for (int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+			for (int z = 0; z < 3; z++) {
+				a0[z][y][x] = (int) ((a1[z][y][x] - min[z]) * factor[z]);
+			}
+		}
+	}
+	rowSize = dest->widthStep;
+	pixelStart = dest->imageData;
+	for (int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0) = a0[0][y][x];
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1) = a0[1][y][x];
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2) = a0[2][y][x];
+		}
+	}
+}
 
 } // namespace avalon
 
