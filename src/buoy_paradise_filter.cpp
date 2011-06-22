@@ -128,7 +128,7 @@ void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector)
     {
          buoys_buffer.push_back(vector[i]);
     }
-    std::sort(buoys_buffer.begin(), buoys_buffer.end(), validityComparison);
+    std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
 
     //entfernen alter buoys
     while(buoys_buffer.size()>buoys_buffer_size)

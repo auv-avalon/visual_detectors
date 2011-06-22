@@ -7,13 +7,14 @@
  */
 
 
-#include <cv.h>
 #include <base/samples/frame.h>
 #include <frame_helper/FrameHelperTypes.h>
 #include <frame_helper/FrameHelper.h>
 #include <avalon_base/feature.h>
 #include <base/eigen.h>
 #include <vector>
+
+#include <stddef.h>
 #include <opencv/cv.h>
 
 
