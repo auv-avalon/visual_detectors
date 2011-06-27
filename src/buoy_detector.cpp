@@ -116,7 +116,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame)
     cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
     //cvSmooth(s_plane, s_plane, CV_GAUSSIAN, 13, 13);
 
-    CvSeq* circles = cvHoughCircles(dil, storage, CV_HOUGH_GRADIENT, 2, imgAsHSV->width / 3, configEdgeThreshold, configHoughThreshold);
+    CvSeq* circles = cvHoughCircles(dil, storage, CV_HOUGH_GRADIENT, 2, imgAsHSV->width / 1, configEdgeThreshold, configHoughThreshold);
 
     cvReleaseImage(&s_plane);
     cvReleaseImage(&dil);

@@ -1,5 +1,6 @@
 #include "buoy_paradise_filter.h"
 #include <iostream>
+#include <time.h>
 
 namespace avalon {
 
@@ -17,13 +18,13 @@ BuoyParadiseFilter::BuoyParadiseFilter() : buoys_buffer_size(20), buoys_buffer_s
                                            startvalidation(100), mindist(150), maxval(50),valthreshhold(7),
                                            multiplicator(1.4)
 {
-    std::cout << "ParadiseFilter initialisiert:" << std::endl;
+ /*   std::cout << "ParadiseFilter initialisiert:" << std::endl;
     std::cout << "        buoys_buffer_size = " << buoys_buffer_size << std::endl;
     std::cout << "        buoys_buffer_size_min = " << buoys_buffer_size_min << std::endl;
     std::cout << "        timesteploss = " << timesteploss << std::endl;
     std::cout << "        startvalidation = " << startvalidation << std::endl;
     std::cout << "        mindist = " << mindist << std::endl;
-    std::cout << "        maxval = " << maxval << std::endl;
+    std::cout << "        maxval = " << maxval << std::endl;*/
 }
 
 
@@ -112,6 +113,7 @@ BuoyFeatureVector BuoyParadiseFilter::process()
  */
 void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector) 
 {
+    time_t start = time(NULL);
     BuoyFeatureVector vector=input_vector;
 
     if(vector.size()==0)  //wenn nicht rein gegeben wird
@@ -135,6 +137,8 @@ void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector)
     {
         buoys_buffer.pop_back();
     }
+    time_t end=time(NULL);
+    std::cout<<"feed-time in ms: " << end-start << std::endl;
 }
 
 void BuoyParadiseFilter::setBufferSize(unsigned int i){buoys_buffer_size=i;}
