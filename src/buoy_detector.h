@@ -80,6 +80,18 @@ class HSVColorBuoyDetector : public BuoyDetector {
      void shadingRGB(IplImage* src, IplImage* dest);
      // TODO: more configuration methods if necessary
 
+      /**
+      * Creates a histogram image for a specific gray image
+      * @param 
+      * @return 
+      */
+     IplImage* createHistogram(IplImage* img, int maxRange);
+
+     void imageToSquares(IplImage* img, bool smooth, int squareSize, bool equalizeH, bool equalizeS, bool equalizeV, bool backToRGB);
+
+     void merge(IplImage* dest, IplImage* next, int th);
+
+     void shadingGrey(IplImage* img, int threshold);
  public: 
      /**
       * helper function to output a specfic HSV channel. Don't forget
@@ -88,6 +100,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * @param frame a given IplImage
       */
      IplImage* getChannel(enum Channel channel, IplImage* hsvframe);
+
      IplImage* filterHueChannel(IplImage* hsvframe);
  
  private:
