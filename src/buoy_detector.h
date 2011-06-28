@@ -80,6 +80,9 @@ class HSVColorBuoyDetector : public BuoyDetector {
      void shadingRGB(IplImage* src, IplImage* dest);
      // TODO: more configuration methods if necessary
 
+    // base::AUVMotionCommand creatMotionCommand(const feature::Buoy& buoy);
+     //to create a AUVMotionCommand from the fully calculated buoy
+
  public: 
      /**
       * helper function to output a specfic HSV channel. Don't forget

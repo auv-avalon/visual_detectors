@@ -108,13 +108,41 @@ BuoyFeatureVector BuoyParadiseFilter::process()
     return buoys_buffer;
 }
 
+void BuoyParadiseFilter::doTimestep2()
+{
+    for(BuoyFeatureVector::iterator it=buoys_buffer.begin();it<buoys_buffer.end();it++)
+    {
+          it->validation++;
+    }   
+    while(buoys_buffer.size()>buoys_buffer_size)
+    {
+        buoys_buffer.pop_back();
+    }
+}
+
+void BuoyParadiseFilter::setValidations2(BuoyFeatureVector& vector)
+{
+    for(unsigned int i=0;i<vector.size();i++)
+    {
+        buoys_buffer.push_back(vector[i]);
+    }
+    std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
+}
+
+
+
+
 /*
  * TODO: Diese Methode implementieren!!!
  */
 void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector) 
-{
+{  
     time_t start = time(NULL);
     BuoyFeatureVector vector=input_vector;
+
+    setValidations2(vector);
+    return;
+
 
     if(vector.size()==0)  //wenn nicht rein gegeben wird
     {                     //führe einen schwächeren timestep aus

@@ -355,6 +355,11 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 		}
 	}
 }
-
+/*
+base::AUVMotionCommand creatMotionCommand(const feature::Buoy& buoy)
+{
+    base::AUVMotionCommand command
+}
+*/
 } // namespace avalon
 
