@@ -127,7 +127,7 @@ void BuoyParadiseFilter::setValidations2(BuoyFeatureVector& vector)
         vector[i].validation=0;
         buoys_buffer.push_back(vector[i]);
     }
-    doTimestep2()
+    doTimestep2();
     std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
 }
 
