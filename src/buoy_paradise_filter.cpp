@@ -116,7 +116,7 @@ void BuoyParadiseFilter::doTimestep2()
     }   
     while(buoys_buffer.size()>buoys_buffer_size)
     {
-        buoys_buffer.pop_back();
+       // buoys_buffer.pop_front();
     }
     std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
 }
