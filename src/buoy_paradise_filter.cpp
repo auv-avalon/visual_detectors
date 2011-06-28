@@ -122,13 +122,14 @@ void BuoyParadiseFilter::doTimestep2()
 }
 
 void BuoyParadiseFilter::setValidations2(BuoyFeatureVector& vector)
-{
+{/*
     for(unsigned int i=0;i<vector.size();i++)
     {
         vector[i].validation=0;
         buoys_buffer.push_back(vector[i]);
     }
-    doTimestep2();
+    doTimestep2();*/
+    buoys_buffer=vector;
 }
 
 
