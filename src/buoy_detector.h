@@ -46,7 +46,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * @param frame expects an image in the classic opencv format
       * @return a list of all possible found buoys 
       */
-     BuoyFeatureVector detect(IplImage* frame);
+     BuoyFeatureVector detect(IplImage* frame, double factor);
 
      /**
       * configure the min hue value for buoy extracting in hsv space
@@ -89,9 +89,13 @@ class HSVColorBuoyDetector : public BuoyDetector {
 
      void imageToSquares(IplImage* img, bool smooth, int squareSize, bool equalizeH, bool equalizeS, bool equalizeV, bool backToRGB);
 
-     void merge(IplImage* dest, IplImage* next, int th);
+     void merge(IplImage* dest, IplImage* next, int th, bool negativColor);
+
+     int merge(IplImage* dest, IplImage* src1,  IplImage* scr2, int th1,int th2,bool negativColor1, bool negativColor2,bool rekursion,int past) ;
 
      void shadingGrey(IplImage* img, int threshold);
+
+     IplImage* getCopy(IplImage* src, int height);
  public: 
      /**
       * helper function to output a specfic HSV channel. Don't forget
@@ -102,6 +106,8 @@ class HSVColorBuoyDetector : public BuoyDetector {
      IplImage* getChannel(enum Channel channel, IplImage* hsvframe);
 
      IplImage* filterHueChannel(IplImage* hsvframe);
+
+     BuoyFeatureVector detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int pastAverageDark, bool testMode);
  
  private:
      int filterByHue(int H, int S, int V);

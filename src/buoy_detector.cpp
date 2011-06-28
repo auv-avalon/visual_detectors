@@ -1,5 +1,6 @@
 #include "buoy_detector.h"
 #include <stdio.h>
+#include "opencv/highgui.h"
 
 namespace avalon {
 
@@ -23,115 +24,41 @@ HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 
 // ---------------------------------------------------------------------------------------
 
-std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame) {
-	// Vector for all buoys
+std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame, double factor) {
+//	// Vector for all buoys
 	std::vector < feature::Buoy > result;
-	//Original zum HSV-Image umwandeln und dieses glätten.,
-	IplImage* imgAsHSV = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 3);
-	cvCvtColor(frame, imgAsHSV, CV_RGB2HSV);
-	cvSmooth(imgAsHSV, imgAsHSV, CV_GAUSSIAN);
 
-	//Werte zum Durchlaufen und Bearbeiten jeden einzelnen Pixel im HSV-Image
-	int height = imgAsHSV->height;
-	int width = imgAsHSV->width;
-	int rowSize = imgAsHSV->widthStep;
-	char *pixelStart = imgAsHSV->imageData;
+	IplImage* dil = cvCreateImage(cvGetSize(frame), 8, 1);
 
-	//1.Runde:
-	//Annahme: Alles, was nicht den Farbtönen der Boje entspricht, kann keine Boje sein.
-	//Ziel: Jene Pixel, deren Farbtöne, die nicht denen der Boje entsprechen, schwarz einfärben.
-	//Alle anderen behalten ihre Werte. Weiter wird jener Wert mit der höchsten Farbsättigung ermittelt.
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
 
-			uchar H = *(uchar*) (pixelStart + y * rowSize + x * 3 + 0); // Hue
-			uchar S = *(uchar*) (pixelStart + y * rowSize + x * 3 + 1); // Saturation
-			uchar V = *(uchar*) (pixelStart + y * rowSize + x * 3 + 2); // Value (Brightness)
+	cvDilate(frame, dil, NULL, 2);
 
-			int ctype = filterByHue(H, S, V);
-
-			if (ctype == cBLACK) {
-				*(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 0)
-						= cCTHue[ctype];
-				*(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 1)
-						= cCTSat[ctype];
-				*(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 2)
-						= cCTVal[ctype];
-			} else {
-				*(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 0) = H;
-				*(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 1) = S;
-				*(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 2) = V;
-			}
-		}
-	}
-
-	// 2. Runde:
-	//Annahme: Boje ist besitzt von den übriggebliebenen "freien" Pixel die höchsten Farbsättigungswerte
-	//Ziel: Jene Pixel, deren Sättigungswerte unter einem bestimmten Prozentsatz des zuvor ermittelten
-	//höchsten Sättigungswert liegen, werden  schwarz eingefärbt.
-
-	//	 for (int y = 0; y < height; y++) {
-	//	 for (int x = 0; x < width; x++) {
-	//
-	//	 uchar H = *(uchar*) (pixelStart + y * rowSize + x * 3 + 0); // Hue
-	//	 uchar S = *(uchar*) (pixelStart + y * rowSize + x * 3 + 1); // Saturation
-	//	 uchar V = *(uchar*) (pixelStart + y * rowSize + x * 3 + 2); // Value (Brightness)
-	//
-	//	 int ctype = filterBySaturation(H, S, V);
-	//
-	//	 if (ctype != -1) {
-	//	 *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 0)
-	//	 = cCTHue[ctype];
-	//	 *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 1)
-	//	 = cCTSat[ctype];
-	//	 *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 2)
-	//	 = cCTVal[ctype];
-	//	 } else {
-	//	 *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 0) = H;
-	//	 *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 1) = S;
-	//	 *(uchar*) (pixelStart + (y) * rowSize + (x) * 3 + 2) = V;
-	//	 }
-	//	 }
-	//	 }
-
-	//Der höchste Sättigungswert wird wieder auf 0 gestellt.
-	satMax = 0;
-	valMax = 0;
-
-	//Jeder HSV-Kanal bekommt sein eigenes Image.
-	IplImage* s_plane = getChannel(HUE, imgAsHSV);
-	IplImage* dil = cvCreateImage(cvGetSize(s_plane), 8, 1);
-
-	cvEqualizeHist(s_plane, s_plane);
-
-	cvDilate(s_plane, dil, NULL, 2);
-
-	//Über das Image für die Sättigung werden (nachdem es nocheinmal übern Gauss-Filter geglättet wurde)
-	//die Kreise ermittelt und in das HSV-Image eingezeichnet.
+//	//Über das Image für die Sättigung werden (nachdem es nocheinmal übern Gauss-Filter geglättet wurde)
+//	//die Kreise ermittelt und in das HSV-Image eingezeichnet.
 	CvMemStorage* storage = cvCreateMemStorage(0);
-
+//
 	cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
 	//cvSmooth(s_plane, s_plane, CV_GAUSSIAN, 13, 13);
 
 	CvSeq* circles = cvHoughCircles(dil, storage, CV_HOUGH_GRADIENT, 2,
-			imgAsHSV->width / 2, configEdgeThreshold, configHoughThreshold);
+			frame->width / 3, configEdgeThreshold, configHoughThreshold);
 
-	cvReleaseImage(&s_plane);
+//	cvReleaseImage(&s_plane);
 	cvReleaseImage(&dil);
 
 	for (int i = 0; i < circles->total; i++) {
 		float* circle = (float*) cvGetSeqElem(circles, i);
 
-		int x = circle[0];
-		int y = circle[1];
-		int r = circle[2];
+		int x =(int) (circle[0]/factor);
+		int y = (int) (circle[1]/factor);
+		int r = (int) (circle[2]/factor);
 
 		feature::Buoy data(x, y, r);
 
 		result.push_back(data);
 	}
 
-	cvReleaseImage(&imgAsHSV);
+//	cvReleaseImage(&imgAsHSV);
 
 	return result;
 }
@@ -396,19 +323,112 @@ IplImage* HSVColorBuoyDetector::createHistogram(IplImage* img, int maxRange) {
 
 }
 
-void HSVColorBuoyDetector::merge(IplImage* dest, IplImage* next, int th) {
-
+void HSVColorBuoyDetector::merge(IplImage* dest, IplImage* next, int th,
+		bool negativColor) {
+	int negColor = negativColor ? 255 : 0;
+	int posColor = negativColor ? 0 : 255;
 	int height = dest->height;
 	int width = dest->width;
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
 
 			int v = ((uchar *) (next->imageData + y * next->widthStep))[x];
-			if (v <= th) {
-				((uchar *) (dest->imageData + y * dest->widthStep))[x] = v;
+
+			if (v >= th) {
+				((uchar *) (dest->imageData + y * dest->widthStep))[x]
+						= negColor;
+			} else {
+				((uchar *) (dest->imageData + y * dest->widthStep))[x]
+						= posColor;
 			}
 		}
 	}
+}
+
+int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
+		int th1, int th2, bool negativColor1, bool negativColor2,
+		bool rekursion, int past) {
+	int negColor1 = negativColor1 ? 255 : 0;
+	int posColor1 = negativColor1 ? 0 : 255;
+	int negColor2 = negativColor2 ? 255 : 0;
+	int posColor2 = negativColor2 ? 0 : 255;
+	int height = dest->height;
+	int width = dest->width;
+	float counter1 = 0;
+	float counter2 = 0;
+	float counter3 = 0;
+	for (int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+
+			int v = ((uchar *) (src1->imageData + y * src1->widthStep))[x];
+
+			int chosenValue = 0;
+			if (v >= th1) {
+				((uchar *) (dest->imageData + y * dest->widthStep))[x]
+						= chosenValue = negColor1;
+
+			} else {
+				((uchar *) (dest->imageData + y * dest->widthStep))[x]
+						= chosenValue = posColor1;
+			}
+			v = ((uchar *) (scr2->imageData + y * scr2->widthStep))[x];
+
+			if (v >= th2) {
+
+				if (chosenValue == 0) {
+					if (negColor2 == 0) {
+						counter2++; //src1 hat schon schwarz gefärbt, src2 würde eigentlich auch schwarz färben
+					}
+					counter1++;
+				} else {
+					if (negColor2 == 0) {
+						((uchar *) (dest->imageData + y * dest->widthStep))[x]
+								= negColor2;
+						counter3++; //src1 hat weiß gefärbt, src2 färbt jetzt schwarz
+					}
+				}
+
+			} else {
+
+				if (chosenValue == 0) {
+					if (posColor2 == 0) {
+						counter2++;//src1 hat schon schwarz gefärbt, src2 würde eigentlich auch schwarz färben
+					}
+					counter1++;
+				} else {
+					if (posColor2 == 0) {
+						((uchar *) (dest->imageData + y * dest->widthStep))[x]
+								= posColor2;
+						counter3++;//src1 hat weiß gefärbt, src2 färbt jetzt schwarz
+					}
+				}
+			}
+
+		}
+	}
+
+	if (rekursion) {
+		if (counter1 < 200 && (th1 + 10) <= 255) {
+			return merge(dest, src1, scr2, (th1 + 10), th2, negativColor1,
+					negativColor2, true, past);
+
+		} else {
+
+			if (counter2 + counter3 <= (height*width) / (double) 5 && (past==0 ||(past*250)/(double)100>counter2 + counter3)) {
+				if ((counter2 / counter1) < 0.25 && (th2 + 10) <= 255) {
+					return merge(dest, src1, scr2, th1, (th2 + 10),
+							negativColor1, negativColor2, true, past);
+				}
+			} else {
+				if ((th2 - 10) >= 0) {
+					return merge(dest, src1, scr2, th1, (th2 - 10),
+							negativColor1, negativColor2, false, past);
+				}
+			}
+
+		}
+	}
+	return counter2 + counter3;
 }
 
 void HSVColorBuoyDetector::imageToSquares(IplImage* img, bool smooth,
@@ -496,99 +516,78 @@ void HSVColorBuoyDetector::imageToSquares(IplImage* img, bool smooth,
 	cvReleaseImage(&v_plane);
 }
 
+IplImage* HSVColorBuoyDetector::getCopy(IplImage* src, int newHeight) {
+	int curHeight = src -> height;
+	double factor = newHeight / (double) curHeight;
+	IplImage *dst = cvCreateImage(
+			cvSize((int) ((src->width) * factor),
+					(int) ((src->height) * factor)), 8, 3);
+	cvResize(src, dst, 1);
+	return dst;
+}
+
 void HSVColorBuoyDetector::shadingGrey(IplImage* img, int threshold) {
 
 
-//	//	cvEqualizeHist(img, img);
-//
-	int height = img->height;
-	int width = img->width;
-//
-//	float a0[height][width];
-//	float slope[2][width];
-//	float yy0[2][width];
-//	int a1[height][width];
-//
-//	for (int y = 0; y < height; y++) {
-//		for (int x = 0; x < width; x++) {
-//			a0[y][x] = ((uchar *) (img->imageData + y * img->widthStep))[x];
-//		}
-//	}
-//	float mean, sum, sxy, sx2, mid;
-//	mid = height / (float) 2;
-//	for (int x = 0; x < width; x++) {
-//		sum = 0;
-//		for (int y = 0; y < height; y++) {
-//			sum += (int) a0[y][x];
-//		}
-//
-//		mean = sum / height;
-//		sxy = 0;
-//		sx2 = 0;
-//		for (int y = 0; y < height; y++) {
-//			sxy += (y - mid) * a0[y][x] - mean;
-//			sx2 += (y - mid) * (y - mid);
-//		}
-//
-//		slope[1][x] = sxy / sx2;
-//		yy0[1][x] = mean - slope[1][x] * mid;
-//
-//	}
-//
-//	mid = width / (float) 2;
-//	for (int y = 0; y < height; y++) {
-//		sum = 0;
-//		for (int x = 0; x < width; x++) {
-//
-//			sum += slope[1][x] * y + yy0[1][x];
-//		}
-//
-//		mean = sum / width;
-//		sxy = 0;
-//		sx2 = 0;
-//		for (int x = 0; x < width; x++) {
-//			sxy += (x - mid) * (slope[1][x] * y + yy0[1][x] - mean);
-//			sx2 += (x - mid) * (x - mid);
-//		}
-//
-//		slope[0][y] = sxy / sx2;
-//		yy0[0][y] = mean - slope[0][y] * mid;
-//
-//	}
-//
-//	int c, min, max;
-//	float factor;
-//	min = 255;
-//	max = 0;
-//	for (int y = 0; y < height; y++) {
-//		for (int x = 0; x < width; x++) {
-//			a1[y][x] = (int) (a0[y][x] - (slope[0][y] * x + yy0[0][y]));
-//			if (a1[y][x] < min) {
-//				min = a1[y][x];
-//			}
-//			if (a1[y][x] > max) {
-//				max = a1[y][x];
-//			}
-//		}
-//	}
-//	factor = 255 / (float) (max - min);
-//	for (int x = 0; x < width; x++) {
-//		for (int y = 0; y < height; y++) {
-//			c = (int) ((a1[y][x] - min) * factor);
-//
-//			a0[y][x] = c;
-//		}
-//	}
-	for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-//			int value = a0[y][x];
-			int value= ((uchar *) (img->imageData + y * img->widthStep))[x];
-			if (threshold != -1)
-				value = value > threshold ? 0: value;
-			((uchar *) (img->imageData + y * img->widthStep))[x]
-					= value;
-		}
-	}
 }
+
+std::vector<feature::Buoy> HSVColorBuoyDetector:: detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int pastAverageDark, bool testMode){
+
+		IplImage* copy =getCopy(img, height);
+		double factor = height / (double) (img->height);
+		IplImage* copy2 = cvCreateImage(cvGetSize(copy), 8, 1);
+
+		for(int x =0; x< copy2 -> width;x++){
+			for(int y = 0; y<copy2 -> height; y++){
+				((uchar *) (copy2->imageData + y * copy2->widthStep))[x] = 0;
+			}
+		}
+		//
+		cvCvtColor(copy, copy, CV_BGR2RGB);
+
+		IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+		IplImage* h_planeShaded = cvCreateImage(cvGetSize(copy), 8, 1);
+		IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+		IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+		IplImage* mergedH = cvCreateImage(cvGetSize(copy), 8, 1);
+//		IplImage* mergedS = cvCreateImage(cvGetSize(copy), 8, 1);
+		IplImage* mergedV = cvCreateImage(cvGetSize(copy), 8, 1);
+		IplImage* mergedHV = cvCreateImage(cvGetSize(copy), 8, 1);
+
+		cvCvtColor(copy, copy, CV_RGB2HSV);
+
+		cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
+
+		merge(mergedH,h_plane, mergeHValue, false);
+//		merge(mergedS,s_plane, mergeSValue, true);
+
+
+		cvCvtColor(copy, copy, CV_HSV2RGB);
+		shadingRGB(copy, copy);
+		cvCvtColor(copy, copy, CV_RGB2HSV);
+		cvCvtPixToPlane(copy, h_planeShaded, s_plane, v_plane, 0);
+		merge(mergedV,v_plane, mergeVValue, true);
+		merge(mergedHV, h_plane, v_plane, mergeHValue, mergeVValue, false, true, true, pastAverageDark);
+		if(testMode){
+			cvShowImage("H", mergedH);
+//			cvShowImage("S", mergedS);
+			cvShowImage("V", mergedV);
+			cvShowImage("H&V", mergedHV);
+		}
+		std::vector < feature::Buoy > result = detect(mergedHV, factor);
+		cvReleaseImage(&h_plane);
+		cvReleaseImage(&h_planeShaded);
+		cvReleaseImage(&s_plane);
+		cvReleaseImage(&v_plane);
+		cvReleaseImage(&mergedH);
+//		cvReleaseImage(&mergedS);
+		cvReleaseImage(&mergedV);
+		cvReleaseImage(&mergedHV);
+//
+
+		return result;
+
+//		return null;
+	}
 } // namespace avalon
 
