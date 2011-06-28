@@ -118,6 +118,7 @@ void BuoyParadiseFilter::doTimestep2()
     {
         buoys_buffer.pop_back();
     }
+    std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
 }
 
 void BuoyParadiseFilter::setValidations2(BuoyFeatureVector& vector)
@@ -128,7 +129,6 @@ void BuoyParadiseFilter::setValidations2(BuoyFeatureVector& vector)
         buoys_buffer.push_back(vector[i]);
     }
     doTimestep2();
-    std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
 }
 
 
