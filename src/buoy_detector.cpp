@@ -163,8 +163,6 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 
 	int height = src->height;
 	int width = src->width;
-	cout << "Height: " + height << endl;
-	cout << "Width: " + width << endl;
 	int rowSize = src->widthStep;
 	char *pixelStart = src->imageData;
 
