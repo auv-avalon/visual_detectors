@@ -426,6 +426,7 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 
 		}
 	}
+	//std::cout  <<  "Th2 ist " << th2<< std::endl;
 	return counter2 + counter3;
 }
 
@@ -529,7 +530,7 @@ void HSVColorBuoyDetector::shadingGrey(IplImage* img, int threshold) {
 
 }
 
-std::vector<feature::Buoy> HSVColorBuoyDetector:: detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int pastAverageDark, bool testMode){
+std::vector<feature::Buoy> HSVColorBuoyDetector:: detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int steps, int pastAverageDark, bool testMode){
 
 		IplImage* copy =getCopy(img, height);
 		double factor = height / (double) (img->height);

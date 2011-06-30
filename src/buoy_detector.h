@@ -107,7 +107,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
 
      IplImage* filterHueChannel(IplImage* hsvframe);
 
-     BuoyFeatureVector detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int pastAverageDark, bool testMode);
+     BuoyFeatureVector detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int steps, int pastAverageDark, bool testMode);
  
  private:
      int filterByHue(int H, int S, int V);
