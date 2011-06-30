@@ -89,6 +89,9 @@ void BuoyParadiseFilter::mergeVectors(BuoyFeatureVector& vector)
  */
 BuoyFeatureVector BuoyParadiseFilter::process()
 {
+	return buoys_buffer.back();
+
+
     BuoyFeatureVector vector = BuoyFeatureVector();
     for(unsigned int i=0;i<buoys_buffer.size();i++)
     {
@@ -104,6 +107,8 @@ BuoyFeatureVector BuoyParadiseFilter::process()
  */
 void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector) 
 {
+	buoys_buffer.push_back(input_vector);
+	return;
     BuoyFeatureVector vector = input_vector;
     setValidations(vector);
     mergeVectors(vector);
