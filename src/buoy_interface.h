@@ -63,7 +63,7 @@ inline static bool valsumComparison(avalon::BuoyFeatureVector const& bfv0,
         }
         for(unsigned int i=0;i<bfv1.size();i++)
         {
-            x0+=bfv1[i].validation;
+            x1+=bfv1[i].validation;
         }
         return x0>x1;
     }

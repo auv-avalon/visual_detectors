@@ -37,6 +37,11 @@ void BuoyParadiseFilter::doTimestep()
         
         while(b)
         {
+        	if(buoys_buffer.size()==0)
+        	{
+        		b=false;
+        		continue;
+        	}
             base::Time t = base::Time::now();
             int64_t x = t.microseconds-buoys_buffer[i].back().stamp.microseconds;
             if(x>maxage)
@@ -89,7 +94,8 @@ void BuoyParadiseFilter::mergeVectors(BuoyFeatureVector& vector)
  */
 BuoyFeatureVector BuoyParadiseFilter::process()
 {
-	return buoys_buffer.back();
+	std::cout << "process" << std::endl;
+	//return buoys_buffer.back();
 
 
     BuoyFeatureVector vector = BuoyFeatureVector();
@@ -107,13 +113,20 @@ BuoyFeatureVector BuoyParadiseFilter::process()
  */
 void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector) 
 {
-	buoys_buffer.push_back(input_vector);
-	return;
+	std::cout << "feed  " << std::endl;
+//	buoys_buffer.push_back(input_vector);
+//	return;
+	std::cout << "vector  " << std::endl;
     BuoyFeatureVector vector = input_vector;
+    std::cout << "setValidations  " << std::endl;
     setValidations(vector);
+    std::cout << "mergeVectors  " << std::endl;
     mergeVectors(vector);
+    std::cout << "sort  " << std::endl;
     std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::valsumComparison);
+    std::cout << "doTimestep  " << std::endl;
     doTimestep();
+    std::cout << "end" << std::endl;
 }
 
 //void BuoyParadiseFilter::setBufferSize(unsigned int i){buoys_buffer_size=i;}
