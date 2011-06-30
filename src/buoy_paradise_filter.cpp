@@ -19,7 +19,7 @@
 namespace avalon {
 
 BuoyParadiseFilter::BuoyParadiseFilter() : buoys_buffer_size(5), buoys_buffer_size_min(3),
-                                           startvalidation(100), mindist(10), maxage(1500000)
+                                           startvalidation(100), mindist(100), maxage((int64_t)1500000)
 {
 }
 
