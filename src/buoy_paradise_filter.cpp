@@ -117,5 +117,10 @@ void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector)
 }
 
 //void BuoyParadiseFilter::setBufferSize(unsigned int i){buoys_buffer_size=i;}
+    void BuoyParadiseFilter::setBufferSize(unsigned int i){buoys_buffer_size=i;}
+    void BuoyParadiseFilter::setMinSize(unsigned int i){buoys_buffer_size_min=i;}
+    void BuoyParadiseFilter::setStartval(unsigned int i){startvalidation=i;}
+    void BuoyParadiseFilter::setMindist(unsigned int i){mindist=i;}
+    void BuoyParadiseFilter::setMaxage(unsigned int i){maxage=(int64_t)(i*10000);}
 
 }

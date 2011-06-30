@@ -57,7 +57,11 @@ class BuoyParadiseFilter : public BuoyFilter
 
     void doTimestep();
 
-//    void setBufferSize(unsigned int i);
+    void setBufferSize(unsigned int i);
+    void setMinSize(unsigned int i);
+    void setStartval(unsigned int i);
+    void setMindist(unsigned int i);
+    void setMaxage(unsigned int i);
 
  private:
 
