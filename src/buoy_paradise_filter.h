@@ -19,6 +19,7 @@
 #include <math.h>
 #include <vector>
 #include <algorithm>
+#include "base/time.h"
 
 namespace avalon {
 
@@ -43,12 +44,6 @@ class BuoyParadiseFilter : public BuoyFilter
     ~BuoyParadiseFilter();
 
     /**
-     * has the filter already found a buoy in a given data source (feature vectors)
-     * @return true if a real buoy is detected
-     */
-    bool isBuoyFound() const;
-
-    /**
      * returns the feature of the best possible recognized buoy for a given set of data
      * @return buoy feature of the best possible match
      */
@@ -60,59 +55,32 @@ class BuoyParadiseFilter : public BuoyFilter
      */
     void feed(const BuoyFeatureVector& input_vector);
 
+    void doTimestep();
 
-    /**
-     * sets the size of the feature buffer processed by this filter
-     * @param size current size of the buffer
-     */
-     void configureBuoysBufferSize(int size) { 
-         buoys_buffer_size = size;
-     }
-
-    void doTimestep(double t);
-    void doTimestep2();
-
-    void setBufferSize(unsigned int i);
-    void setTimesteploss(double d);
-    void setStartvalidation(double d);
-    void setMindist(double d);
-    void setMaxval(double d);
-    void setThreshhold(double d);
-    void setMultiplicator(double d);
+//    void setBufferSize(unsigned int i);
 
  private:
 
     void setValidations(BuoyFeatureVector& vector);
-    void setValidations2(BuoyFeatureVector& vector);
+    void mergeVectors(BuoyFeatureVector& vector);
+    
 
-    bool compare(feature::Buoy b1, feature::Buoy b2);
+    std::vector<BuoyFeatureVector> buoys_buffer;
 
-
-    BuoyFeatureVector buoys_buffer;
-
-    // maximum number of buoys analysed by this filter
+    // maximum number of buoys to be part of one BuoyFeatureVector
     unsigned int buoys_buffer_size;
 
-    // minimum number of buoys to stay in the buffer
+    // minimum number of buoys in a BuoyFeatureVector to make it valid
     int buoys_buffer_size_min;
 
-    // loss of validation per timestep
-    double timesteploss;
-
-    // validation mit der jede boye startet
+    // validation von der ausgehend die validation der buoys berechnet wird
     double startvalidation;
 
-    // minimum distance between buoys to be the same
+    // minimum distance between buoys to be part of the same BuoyFeatureVector
     double mindist;
-    // maximale validation die durch nähe hinzu gefügt werden kann
-    // gilt nur für alte buoys die durch neue etwas hinzu bekommen
-    double maxval;
     
-    //wenn die validation einer Buoy diesen Wert unterschreitet wird sie entfernt
-    double valthreshhold;
-
-    //das wievielfache der validation einer buoy kann eine neue buoy maximal kriegen?
-    double multiplicator;
+    // maximales alter einer Buoy in einem BuoyFeatureVector
+    int64_t maxage;
 
 };
 

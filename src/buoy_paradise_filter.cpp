@@ -1,30 +1,26 @@
 #include "buoy_paradise_filter.h"
 #include <iostream>
-#include <time.h>
+
+/*    // maximum number of buoys to be part of one BuoyFeatureVector
+    unsigned int buoys_buffer_size;
+
+    // minimum number of buoys in a BuoyFeatureVector to make it valid
+    int buoys_buffer_size_min;
+
+    // validation von der ausgehend die validation der buoys berechnet wird
+    double startvalidation;
+
+    // minimum distance between buoys to be part of the same BuoyFeatureVector
+    double mindist;
+    
+    // maximales alter einer Buoy in einem BuoyFeatureVector
+    base::Time maxage;    */
 
 namespace avalon {
 
-//bool feature::Buoy::operator< (const Buoy &a, const Buoy &b)
-//{
-//    return a.validation<b.validation;
-//}
-
-bool BuoyParadiseFilter::compare(feature::Buoy b1, feature::Buoy b2)
+BuoyParadiseFilter::BuoyParadiseFilter() : buoys_buffer_size(5), buoys_buffer_size_min(3),
+                                           startvalidation(100), mindist(10), maxage(1500000)
 {
-    return b1.validation>b2.validation;
-}
-
-BuoyParadiseFilter::BuoyParadiseFilter() : buoys_buffer_size(20), buoys_buffer_size_min(10), timesteploss(1.75),
-                                           startvalidation(100), mindist(150), maxval(50),valthreshhold(7),
-                                           multiplicator(1.4)
-{
- /*   std::cout << "ParadiseFilter initialisiert:" << std::endl;
-    std::cout << "        buoys_buffer_size = " << buoys_buffer_size << std::endl;
-    std::cout << "        buoys_buffer_size_min = " << buoys_buffer_size_min << std::endl;
-    std::cout << "        timesteploss = " << timesteploss << std::endl;
-    std::cout << "        startvalidation = " << startvalidation << std::endl;
-    std::cout << "        mindist = " << mindist << std::endl;
-    std::cout << "        maxval = " << maxval << std::endl;*/
 }
 
 
@@ -32,152 +28,89 @@ BuoyParadiseFilter::~BuoyParadiseFilter()
 {
 }
 
-bool BuoyParadiseFilter::isBuoyFound() const 
+void BuoyParadiseFilter::doTimestep()
 {
-    if (buoys_buffer.size()>=1) return true;
-    return false;
-}
-
-void BuoyParadiseFilter::doTimestep(double t)
-{
-    for(BuoyFeatureVector::iterator it=buoys_buffer.begin();it<buoys_buffer.end();it++)
+    //entfernen zu alter buoys
+    for(unsigned int i=0;i<buoys_buffer.size();i++)
     {
-     //   it->validation-=timesteploss;
-     //   if(it->validation<0)it->validation=0;
-          it->validation/=t;//buoys_buffer.size();
-          if(it->validation<valthreshhold)
-              buoys_buffer.erase(it);
+        bool b=true;
+        
+        while(b)
+        {
+            base::Time t = base::Time::now();
+            int64_t x = t.microseconds-buoys_buffer[i].back().stamp.microseconds;
+            if(x>maxage)
+            {
+                buoys_buffer[i].pop_back();
+            }else b=false;
+        }
     }
 }
 
 void BuoyParadiseFilter::setValidations(BuoyFeatureVector& vector)
 {
-    //berechnen der validation für die buoy
-    std::vector<int> index;
-    std::vector<double> values;
-    for(unsigned int j=0;j<vector.size();j++)
+    for(unsigned int i=0;i<vector.size();i++)
     {
-        vector[j].validation=startvalidation;//buoys_buffer_size-buoys_buffer.size();
-	int i=0;
-        for(BuoyFeatureVector::iterator it=buoys_buffer.begin();it<buoys_buffer.end();it++)
+        double x = startvalidation - i*startvalidation/vector.size();
+        vector[i].validation = x;
+    }
+}
+
+void BuoyParadiseFilter::mergeVectors(BuoyFeatureVector& vector)
+{
+    for(unsigned int i=0;i<vector.size();i++)
+    {
+        bool b=false;
+        for(std::vector<BuoyFeatureVector>::iterator it=buoys_buffer.begin();it<buoys_buffer.end() && b==false;it++)
         {
-            double x=it->image_x-vector[j].image_x;
-            double y=it->image_y-vector[j].image_y;
-            int dist=sqrt(x*x+y*y);
-            if(dist>mindist)
+            double diff_x = vector[i].image_x-it->back().image_x;
+            double diff_y = vector[i].image_y-it->back().image_y;
+            double dist = sqrt(diff_x*diff_x+diff_y*diff_y);
+            if(dist<=mindist)
             {
-                continue;
+                it->push_back(vector[i]);
+                b=true;
+                std::sort(it->begin(), it->end(), &avalon::feature::Buoy::timeComparison);
             }
-
-            //berechnen der validation für die buoy
-	    /*
-             *  =>> sorgt dafür das maximal 1.2 mal die validation der jeweiligen "nachbar"-buoy addiert wird
-             */
-            double raddiv=it->image_radius-vector[j].image_radius;  //ein faktor der sich aus der Radius-Differenz ergibt
-            raddiv=sqrt(raddiv*raddiv);
-            raddiv=1-raddiv/it->image_radius;
-            if(raddiv<0)raddiv=0;
-            double val=maxval-dist*(maxval/mindist); //eine gerade abhängig von der Distanz
-            double val2=multiplicator*raddiv*it->validation*(val/maxval)*(val/maxval);
-            if(val<0) val=0;
-            vector[j].validation+=val2;
-            //merken welche bojen noch um welche werte erhöht werden müssen
-            //ACHTUNG: hier werden die bojen um einen wert erhöht der von ihrer eigenen val ab hängt
-            index.push_back(i);
-            values.push_back(val*multiplicator*raddiv);
-
-	    i++;
+        }
+        //if buoy was not merged to any BuoyFeatureVector it starts a new one
+        if(b==false)
+        {
+            BuoyFeatureVector v=BuoyFeatureVector();
+            v.push_back(vector[i]);
+            buoys_buffer.push_back(v);
         }
     }
-    //erhöhen der bojen um die entsprechenden werte
-    for(unsigned int i=0;i<index.size();i++)
-    {
-        int j=index[i];
-        buoys_buffer[j].validation+=values[i];
-    }
-    return;
 }
+
 
 /*
  * TODO: Diese Methode implementieren!!!
  */
 BuoyFeatureVector BuoyParadiseFilter::process()
 {
-//    std::cout << buoys_buffer_size<<" "<<timesteploss<<" "<<startvalidation<<" "<<mindist<<" "<<maxval<<" "<<valthreshhold
-//                                  <<" "<<multiplicator<<std::endl;
-    return buoys_buffer;
-}
-
-void BuoyParadiseFilter::doTimestep2()
-{
-    for(BuoyFeatureVector::iterator it=buoys_buffer.begin();it<buoys_buffer.end();it++)
+    BuoyFeatureVector vector = BuoyFeatureVector();
+    for(unsigned int i=0;i<buoys_buffer.size();i++)
     {
-          it->validation++;
-    }   
-    while(buoys_buffer.size()>buoys_buffer_size)
-    {
-       // buoys_buffer.pop_front();
+        vector.push_back(buoys_buffer[i].back());
     }
-    std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
+
+    return vector;
 }
-
-void BuoyParadiseFilter::setValidations2(BuoyFeatureVector& vector)
-{/*
-    for(unsigned int i=0;i<vector.size();i++)
-    {
-        vector[i].validation=0;
-        buoys_buffer.push_back(vector[i]);
-    }
-    doTimestep2();*/
-    buoys_buffer=vector;
-}
-
-
 
 
 /*
- * TODO: Diese Methode implementieren!!!
+ * 
  */
 void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector) 
-{  
-    time_t start = time(NULL);
-    BuoyFeatureVector vector=input_vector;
-
-    setValidations2(vector);
-    return;
-
-
-    if(vector.size()==0)  //wenn nicht rein gegeben wird
-    {                     //führe einen schwächeren timestep aus
-        doTimestep(timesteploss);
-        return;
-    }
-    doTimestep(timesteploss);
-
+{
+    BuoyFeatureVector vector = input_vector;
     setValidations(vector);
-
-    //einfügen der neuen buoys         TODO: sortiert derzeit falsch herum
-    for(unsigned int i=0;i<vector.size();i++)
-    {
-         buoys_buffer.push_back(vector[i]);
-    }
-    std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::feature::Buoy::validityComparison);
-
-    //entfernen alter buoys
-    while(buoys_buffer.size()>buoys_buffer_size)
-    {
-        buoys_buffer.pop_back();
-    }
-    time_t end=time(NULL);
-    std::cout<<"feed-time in ms: " << end-start << std::endl;
+    mergeVectors(vector);
+    std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::valsumComparison);
+    doTimestep();
 }
 
-void BuoyParadiseFilter::setBufferSize(unsigned int i){buoys_buffer_size=i;}
-void BuoyParadiseFilter::setTimesteploss(double d){timesteploss=d;}
-void BuoyParadiseFilter::setStartvalidation(double d){startvalidation=d;}
-void BuoyParadiseFilter::setMindist(double d){mindist=d;}
-void BuoyParadiseFilter::setMaxval(double d){maxval=d;}
-void BuoyParadiseFilter::setThreshhold(double d){valthreshhold=d;}
-void BuoyParadiseFilter::setMultiplicator(double d){multiplicator=d;}
+//void BuoyParadiseFilter::setBufferSize(unsigned int i){buoys_buffer_size=i;}
 
 }

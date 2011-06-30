@@ -49,7 +49,24 @@ class BuoyDetector {
          cvCircle(image, cvPoint(buoy.image_x, buoy.image_y), buoy.image_radius, 
                  color);
      }
+
+    
 };
+
+inline static bool valsumComparison(avalon::BuoyFeatureVector const& bfv0, 
+                                                avalon::BuoyFeatureVector const& bfv1)
+    {
+        double x0=0,x1=0;
+        for(unsigned int i=0;i<bfv0.size();i++)
+        {
+             x0+=bfv0[i].validation;
+        }
+        for(unsigned int i=0;i<bfv1.size();i++)
+        {
+            x0+=bfv1[i].validation;
+        }
+        return x0>x1;
+    }
 
 
 } // namespace avalon
