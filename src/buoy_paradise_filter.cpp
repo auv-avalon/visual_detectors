@@ -37,19 +37,38 @@ void BuoyParadiseFilter::doTimestep()
         
         while(b)
         {
-        	if(buoys_buffer.size()==0)
+        	if(buoys_buffer[i].size()==0)
         	{
         		b=false;
         		continue;
         	}
             base::Time t = base::Time::now();
-            int64_t x = t.microseconds-buoys_buffer[i].back().stamp.microseconds;
+            int64_t x = t.microseconds-buoys_buffer[i].front().stamp.microseconds;
             if(x>maxage)
             {
-                buoys_buffer[i].pop_back();
-            }else b=false;
+                if(buoys_buffer[i].size()==1) buoys_buffer[i].pop_back();
+                else
+                {
+                    BuoyFeatureVector v;
+                    for(int j=1;j<buoys_buffer[i].size();j++)
+                    {
+                        v.push_back(buoys_buffer[i][j]);
+                    }
+                    buoys_buffer[i]=v;
+                }
+            }else 
+            {
+                b=false;
+            }
         }
     }
+    //entfernen leerer BuoyFeatureVectoren
+    std::vector<BuoyFeatureVector> v;
+    for(unsigned int i=0;i<buoys_buffer.size();i++)
+    {
+        if(buoys_buffer[i].size()>0) v.push_back(buoys_buffer[i]);
+    }
+    buoys_buffer=v;
 }
 
 void BuoyParadiseFilter::setValidations(BuoyFeatureVector& vector)
@@ -75,7 +94,7 @@ void BuoyParadiseFilter::mergeVectors(BuoyFeatureVector& vector)
             {
                 it->push_back(vector[i]);
                 b=true;
-                std::sort(it->begin(), it->end(), &avalon::feature::Buoy::timeComparison);
+             //   std::sort(it->begin(), it->end(), &avalon::feature::Buoy::timeComparison);
             }
         }
         //if buoy was not merged to any BuoyFeatureVector it starts a new one
@@ -94,13 +113,12 @@ void BuoyParadiseFilter::mergeVectors(BuoyFeatureVector& vector)
  */
 BuoyFeatureVector BuoyParadiseFilter::process()
 {
-	std::cout << "process" << std::endl;
 	//return buoys_buffer.back();
-
 
     BuoyFeatureVector vector = BuoyFeatureVector();
     for(unsigned int i=0;i<buoys_buffer.size();i++)
     {
+        if(buoys_buffer[i].size()>=buoys_buffer_size_min)
         vector.push_back(buoys_buffer[i].back());
     }
 
@@ -113,20 +131,11 @@ BuoyFeatureVector BuoyParadiseFilter::process()
  */
 void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector) 
 {
-	std::cout << "feed  " << std::endl;
-//	buoys_buffer.push_back(input_vector);
-//	return;
-	std::cout << "vector  " << std::endl;
     BuoyFeatureVector vector = input_vector;
-    std::cout << "setValidations  " << std::endl;
     setValidations(vector);
-    std::cout << "mergeVectors  " << std::endl;
     mergeVectors(vector);
-    std::cout << "sort  " << std::endl;
     std::sort(buoys_buffer.begin(), buoys_buffer.end(), &avalon::valsumComparison);
-    std::cout << "doTimestep  " << std::endl;
     doTimestep();
-    std::cout << "end" << std::endl;
 }
 
 //void BuoyParadiseFilter::setBufferSize(unsigned int i){buoys_buffer_size=i;}
