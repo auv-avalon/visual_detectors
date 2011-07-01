@@ -24,41 +24,41 @@ HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 
 // ---------------------------------------------------------------------------------------
 
-std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame, double factor) {
-//	// Vector for all buoys
+std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
+		double factor) {
+	//	// Vector for all buoys
 	std::vector < feature::Buoy > result;
 
 	IplImage* dil = cvCreateImage(cvGetSize(frame), 8, 1);
 
-
 	cvDilate(frame, dil, NULL, 2);
 
-//	//Über das Image für die Sättigung werden (nachdem es nocheinmal übern Gauss-Filter geglättet wurde)
-//	//die Kreise ermittelt und in das HSV-Image eingezeichnet.
+	//	//Über das Image für die Sättigung werden (nachdem es nocheinmal übern Gauss-Filter geglättet wurde)
+	//	//die Kreise ermittelt und in das HSV-Image eingezeichnet.
 	CvMemStorage* storage = cvCreateMemStorage(0);
-//
+	//
 	cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
 	//cvSmooth(s_plane, s_plane, CV_GAUSSIAN, 13, 13);
 
 	CvSeq* circles = cvHoughCircles(dil, storage, CV_HOUGH_GRADIENT, 2,
 			frame->width / 3, configEdgeThreshold, configHoughThreshold);
 
-//	cvReleaseImage(&s_plane);
+	//	cvReleaseImage(&s_plane);
 	cvReleaseImage(&dil);
 
 	for (int i = 0; i < circles->total; i++) {
 		float* circle = (float*) cvGetSeqElem(circles, i);
 
-		int x =(int) (circle[0]/factor);
-		int y = (int) (circle[1]/factor);
-		int r = (int) (circle[2]/factor);
+		int x = (int) (circle[0] / factor);
+		int y = (int) (circle[1] / factor);
+		int r = (int) (circle[2] / factor);
 
 		feature::Buoy data(x, y, r);
 
 		result.push_back(data);
 	}
 
-//	cvReleaseImage(&imgAsHSV);
+	//	cvReleaseImage(&imgAsHSV);
 
 	return result;
 }
@@ -344,8 +344,8 @@ void HSVColorBuoyDetector::merge(IplImage* dest, IplImage* next, int th,
 }
 
 int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
-		int th1, int th2, bool negativColor1, bool negativColor2,
-		bool rekursion, int past) {
+		int th1, int th2, int steps, bool negativColor1, bool negativColor2,
+		bool rekursion, int past, bool testMode) {
 	int negColor1 = negativColor1 ? 255 : 0;
 	int posColor1 = negativColor1 ? 0 : 255;
 	int negColor2 = negativColor2 ? 255 : 0;
@@ -355,8 +355,12 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 	float counter1 = 0;
 	float counter2 = 0;
 	float counter3 = 0;
-	for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
+	bool found = false;
+	int yToStart=0;
+	for (int y = 0; y < height; y++) {
+		int pixInX=0;
+
+		for (int x = 0; x < width; x++) {
 
 			int v = ((uchar *) (src1->imageData + y * src1->widthStep))[x];
 
@@ -541,66 +545,67 @@ IplImage* HSVColorBuoyDetector::getCopy(IplImage* src, int newHeight) {
 
 void HSVColorBuoyDetector::shadingGrey(IplImage* img, int threshold) {
 
-
 }
 
-std::vector<feature::Buoy> HSVColorBuoyDetector:: detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int steps, int pastAverageDark, bool testMode){
+std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
+		int height, int mergeHValue, int mergeVValue, int steps,
+		int pastAverageDark, bool testMode) {
 
-		IplImage* copy =getCopy(img, height);
-		double factor = height / (double) (img->height);
-		IplImage* copy2 = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* copy = getCopy(img, height);
+	double factor = height / (double) (img->height);
+	IplImage* copy2 = cvCreateImage(cvGetSize(copy), 8, 1);
 
-		for(int x =0; x< copy2 -> width;x++){
-			for(int y = 0; y<copy2 -> height; y++){
-				((uchar *) (copy2->imageData + y * copy2->widthStep))[x] = 0;
-			}
+	for (int x = 0; x < copy2 -> width; x++) {
+		for (int y = 0; y < copy2 -> height; y++) {
+			((uchar *) (copy2->imageData + y * copy2->widthStep))[x] = 0;
 		}
-		//
-		cvCvtColor(copy, copy, CV_BGR2RGB);
-
-		IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* h_planeShaded = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* mergedH = cvCreateImage(cvGetSize(copy), 8, 1);
-//		IplImage* mergedS = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* mergedV = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* mergedHV = cvCreateImage(cvGetSize(copy), 8, 1);
-
-		cvCvtColor(copy, copy, CV_RGB2HSV);
-
-		cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
-
-		merge(mergedH,h_plane, mergeHValue, false);
-//		merge(mergedS,s_plane, mergeSValue, true);
-
-
-		cvCvtColor(copy, copy, CV_HSV2RGB);
-		shadingRGB(copy, copy);
-		cvCvtColor(copy, copy, CV_RGB2HSV);
-		cvCvtPixToPlane(copy, h_planeShaded, s_plane, v_plane, 0);
-		merge(mergedV,v_plane, mergeVValue, true);
-		merge(mergedHV, h_plane, v_plane, mergeHValue, mergeVValue, false, true, true, pastAverageDark);
-		if(testMode){
-			cvShowImage("H", mergedH);
-//			cvShowImage("S", mergedS);
-			cvShowImage("V", mergedV);
-			cvShowImage("H&V", mergedHV);
-		}
-		std::vector < feature::Buoy > result = detect(mergedHV, factor);
-		cvReleaseImage(&h_plane);
-		cvReleaseImage(&h_planeShaded);
-		cvReleaseImage(&s_plane);
-		cvReleaseImage(&v_plane);
-		cvReleaseImage(&mergedH);
-//		cvReleaseImage(&mergedS);
-		cvReleaseImage(&mergedV);
-		cvReleaseImage(&mergedHV);
-//
-
-		return result;
-
-//		return null;
 	}
+	//
+	cvCvtColor(copy, copy, CV_BGR2RGB);
+
+	IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* h_planeShaded = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* mergedH = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* mergedS = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* mergedV = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* mergedHV = cvCreateImage(cvGetSize(copy), 8, 1);
+
+	cvCvtColor(copy, copy, CV_RGB2HSV);
+
+	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
+
+	merge(mergedH, h_plane, mergeHValue, false);
+	merge(mergedS, s_plane, mergeHValue, true);
+
+
+	cvCvtColor(copy, copy, CV_HSV2RGB);
+	shadingRGB(copy, copy);
+	cvCvtColor(copy, copy, CV_RGB2HSV);
+	cvCvtPixToPlane(copy, h_planeShaded, s_plane, v_plane, 0);
+	merge(mergedV, v_plane, mergeVValue, true);
+	merge(mergedHV, h_plane, v_plane, mergeHValue, mergeVValue, steps, false,
+			true, true, pastAverageDark, testMode);
+	if (testMode) {
+		cvShowImage("H", mergedH);
+		cvShowImage("S", mergedS);
+		cvShowImage("H&V", mergedHV);
+	}
+	std::vector < feature::Buoy > result = detect(mergedHV, factor);
+	cvReleaseImage(&h_plane);
+	cvReleaseImage(&h_planeShaded);
+	cvReleaseImage(&s_plane);
+	cvReleaseImage(&v_plane);
+	cvReleaseImage(&mergedH);
+	cvReleaseImage(&mergedS);
+	cvReleaseImage(&mergedV);
+	cvReleaseImage(&mergedHV);
+	//
+
+	return result;
+
+	//		return null;
+}
 } // namespace avalon
 
