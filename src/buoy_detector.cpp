@@ -369,64 +369,78 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 				((uchar *) (dest->imageData + y * dest->widthStep))[x]
 						= chosenValue = posColor1;
 			}
-			v = ((uchar *) (scr2->imageData + y * scr2->widthStep))[x];
+//			if(!found&&chosenValue==0){
+//				pixInX++;
+//				found=pixInX>10?true:found;
+//				yToStart=y;
+//			}
 
-			if (v >= th2) {
+//			if (found) {
+				v = ((uchar *) (scr2->imageData + y * scr2->widthStep))[x];
 
-				if (chosenValue == 0) {
-					if (negColor2 == 0) {
-						counter2++; //src1 hat schon schwarz gefärbt, src2 würde eigentlich auch schwarz färben
+				if (v >= th2) {
+
+					if (chosenValue == 0) {
+						if (negColor2 == 0) {
+							counter2++; //src1 hat schon schwarz gefärbt, src2 würde eigentlich auch schwarz färben
+						}
+						counter1++;
+					} else {
+						if (negColor2 == 0) {
+							((uchar *) (dest->imageData + y * dest->widthStep))[x]
+									= negColor2;
+							counter3++; //src1 hat weiß gefärbt, src2 färbt jetzt schwarz
+						}
 					}
-					counter1++;
+
 				} else {
-					if (negColor2 == 0) {
-						((uchar *) (dest->imageData + y * dest->widthStep))[x]
-								= negColor2;
-						counter3++; //src1 hat weiß gefärbt, src2 färbt jetzt schwarz
+
+					if (chosenValue == 0) {
+						if (posColor2 == 0) {
+							counter2++;//src1 hat schon schwarz gefärbt, src2 würde eigentlich auch schwarz färben
+						}
+						counter1++;
+					} else {
+						if (posColor2 == 0) {
+							((uchar *) (dest->imageData + y * dest->widthStep))[x]
+									= posColor2;
+							counter3++;//src1 hat weiß gefärbt, src2 färbt jetzt schwarz
+						}
 					}
 				}
-
-			} else {
-
-				if (chosenValue == 0) {
-					if (posColor2 == 0) {
-						counter2++;//src1 hat schon schwarz gefärbt, src2 würde eigentlich auch schwarz färben
-					}
-					counter1++;
-				} else {
-					if (posColor2 == 0) {
-						((uchar *) (dest->imageData + y * dest->widthStep))[x]
-								= posColor2;
-						counter3++;//src1 hat weiß gefärbt, src2 färbt jetzt schwarz
-					}
-				}
-			}
-
+//			}
 		}
 	}
 
 	if (rekursion) {
-		if (counter1 < 200 && (th1 + 10) <= 255) {
-			return merge(dest, src1, scr2, (th1 + 10), th2, negativColor1,
-					negativColor2, true, past);
+		if (counter1 < 10 && (th1 + steps) <= 255) {
+			return merge(dest, src1, scr2, (th1 + steps), th2, steps,
+					negativColor1, negativColor2, true, past, testMode);
 
 		} else {
 
-			if (counter2 + counter3 <= (height*width) / (double) 5 && (past==0 ||(past*250)/(double)100>counter2 + counter3)) {
-				if ((counter2 / counter1) < 0.25 && (th2 + 10) <= 255) {
-					return merge(dest, src1, scr2, th1, (th2 + 10),
-							negativColor1, negativColor2, true, past);
+			if (counter2 + counter3 <= ((height-yToStart) * width) / (double) 10 && (past
+					== 0 || (past * 250) / (double) 100 > counter2 + counter3)) {
+				if ((counter2 / counter1) < 0.25 && (th2 + steps) <= 255) {
+					return merge(dest, src1, scr2, th1, (th2 + steps), steps,
+							negativColor1, negativColor2, true, past, testMode);
 				}
 			} else {
-				if ((th2 - 10) >= 0) {
-					return merge(dest, src1, scr2, th1, (th2 - 10),
-							negativColor1, negativColor2, false, past);
+				if ((th2 - steps) >= 0) {
+					return merge(dest, src1, scr2, th1, (th2 - (steps)), steps,
+							negativColor1, negativColor2, false, past, testMode);
 				}
 			}
 
 		}
 	}
-	//std::cout  <<  "Th2 ist " << th2<< std::endl;
+	if (testMode) {
+		std::cout << "Th2 ist " << th2 << std::endl;
+		std::cout << "Steps sind " << steps << std::endl;
+		std::cout << "Übereinstimmungen: " << (counter2 / counter1)
+				<< std::endl;
+		cvShowImage("V", scr2);
+	}
 	return counter2 + counter3;
 }
 

@@ -91,7 +91,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
 
      void merge(IplImage* dest, IplImage* next, int th, bool negativColor);
 
-     int merge(IplImage* dest, IplImage* src1,  IplImage* scr2, int th1,int th2,bool negativColor1, bool negativColor2,bool rekursion,int past) ;
+     int merge(IplImage* dest, IplImage* src1, IplImage* scr2,int th1, int th2,int steps, bool negativColor1, bool negativColor2, bool rekursion, int past, bool testMode);
 
      void shadingGrey(IplImage* img, int threshold);
 
