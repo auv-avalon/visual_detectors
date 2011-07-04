@@ -43,6 +43,9 @@ class BuoyParadiseFilter : public BuoyFilter
      */
     ~BuoyParadiseFilter();
 
+    feature::Buoy radius_filter(BuoyFeatureVector& buoys);
+    
+    
     /**
      * returns the feature of the best possible recognized buoy for a given set of data
      * @return buoy feature of the best possible match
@@ -56,6 +59,8 @@ class BuoyParadiseFilter : public BuoyFilter
     void feed(const BuoyFeatureVector& input_vector);
 
     void doTimestep();
+    
+    
 
     void setBufferSize(unsigned int i);
     void setMinSize(unsigned int i);

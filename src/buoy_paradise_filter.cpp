@@ -50,7 +50,7 @@ void BuoyParadiseFilter::doTimestep()
                 else
                 {
                     BuoyFeatureVector v;
-                    for(int j=1;j<buoys_buffer[i].size();j++)
+                    for(unsigned int j=1;j<buoys_buffer[i].size();j++)
                     {
                         v.push_back(buoys_buffer[i][j]);
                     }
@@ -107,7 +107,32 @@ void BuoyParadiseFilter::mergeVectors(BuoyFeatureVector& vector)
     }
 }
 
+feature::Buoy BuoyParadiseFilter::radius_filter(BuoyFeatureVector& buoys)
+{
+    double f2[]={0.7,0.3};
+    double f4[]={0.5,0.35,0,0.15};
+    feature::Buoy buoy=buoys.back();
+    if(buoys.size()>=4)
+    {
+        double x=0;
+        for(unsigned int i=0;i<4;i++)
+	{
+	    x+=buoys[buoys.size()-(i+1)].image_radius*f4[i];
+	}
+	buoy.image_radius=x;
+    }else
+        if(buoys.size()>=2)
+	{
+            double x=0;
+            for(unsigned int i=0;i<2;i++)
+	    {
+	        x+=buoys[buoys.size()-(i+1)].image_radius*f4[i];
+	    }  
+	    buoy.image_radius=x;
+	}
 
+    return buoy;
+}
 /*
  * TODO: Diese Methode implementieren!!!
  */
@@ -119,7 +144,7 @@ BuoyFeatureVector BuoyParadiseFilter::process()
     for(unsigned int i=0;i<buoys_buffer.size();i++)
     {
         if(buoys_buffer[i].size()>=buoys_buffer_size_min)
-        vector.push_back(buoys_buffer[i].back());
+        vector.push_back(radius_filter(buoys_buffer[i]));//buoys_buffer[i].back());
     }
     /*
      * TODO: hier wäre noch ein filter auf den Radius sinnvoll
