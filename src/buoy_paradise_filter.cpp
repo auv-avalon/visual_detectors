@@ -121,6 +121,9 @@ BuoyFeatureVector BuoyParadiseFilter::process()
         if(buoys_buffer[i].size()>=buoys_buffer_size_min)
         vector.push_back(buoys_buffer[i].back());
     }
+    /*
+     * TODO: hier wäre noch ein filter auf den Radius sinnvoll
+     */
 
     return vector;
 }
