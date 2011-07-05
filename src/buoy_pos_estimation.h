@@ -24,7 +24,7 @@ namespace avalon{
     class BuoyPosEstimator{
         private:
             //der Radius der Boje
-            static const float buoyRadius=0.2;
+            
             //die Brennweite der Kamera
             static const float fx=815;		//TODO: Echte Werte heraus finden
             static const float fy=765;
@@ -33,10 +33,10 @@ namespace avalon{
 		//woher hat alex die pixel-breite auf dem die
 	        //wo kriege ich breite und höhe des Bildes her?
 
-            static const float imgWidth=1024;
-            static const float imgHeight=640;
+        //    static const float imgWidth=1024;
+        //    static const float imgHeight=640;
 
-
+           
 
             //helps estimateAuvKoordinates. calculates the position of the buoy
             //relativ to the camera of the AUV
@@ -48,6 +48,10 @@ namespace avalon{
 	    //relative to the AUV-Center
 	    void transformKoordinates(avalon::feature::Buoy& buoy);
         public:
+            float buoyRadius;
+
+            BuoyPosEstimator(double r);
+            BuoyPosEstimator();
 
             //calculates the position of the buoy relativ to the center of the AUV
             //and stores it into the buoy itself
