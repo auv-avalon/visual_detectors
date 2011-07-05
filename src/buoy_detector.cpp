@@ -439,10 +439,13 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 		}
 	}
 	if (testMode) {
-	  //std::cout << "Th2 ist " << th2 << std::endl;
+	  std::cout << "Th2 ist " << th2 << std::endl;
 		//std::cout << "Steps sind " << steps << std::endl;
-		//std::cout << "Übereinstimmungen: " << (counter2 / counter1)
-	  //				<< std::endl;
+//		std::cout << "Übereinstimmungen: " << (counter2 / counter1)
+//	  				<< std::endl;
+		IplImage* v_plane = cvCreateImage(cvGetSize(scr2), 8, 1);
+		merge(v_plane, scr2, th2, true);
+		cvShowImage("V binary", v_plane);
 		cvShowImage("V", scr2);
 	}
 	return counter2 + counter3;
@@ -577,7 +580,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
 	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
 
 	merge(mergedH, h_plane, mergeHValue, false);
-	merge(mergedS, s_plane, mergeHValue, true);
+//	merge(mergedS, s_plane, mergeHValue, true);
 
 
 	cvCvtColor(copy, copy, CV_HSV2RGB);
@@ -589,7 +592,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
 			true, true, pastAverageDark, testMode);
 	if (testMode) {
 		cvShowImage("H", mergedH);
-		cvShowImage("S", mergedS);
+//		cvShowImage("S", mergedS);
 		cvShowImage("H&V", mergedHV);
 	}
 	std::vector < feature::Buoy > result = detect(mergedHV, factor);
