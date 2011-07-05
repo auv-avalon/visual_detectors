@@ -15,7 +15,10 @@ namespace avalon{
 	//calculate the y and z koordinate
         cv::Point2f point2d=fh.calcRelPosToCenter(frame, buoy.image_x,buoy.image_y, buoy.world_coord[0]);
         buoy.world_coord[1]=point2d.x;
-        buoy.world_coord[2]=-point2d.y;
+        buoy.world_coord[2]=point2d.y;
+        if(buoy.image_x<frame.getWidth()/2 && buoy.world_coord[1]<0) buoy.world_coord[1]*=-1;
+        else
+        if(buoy.image_x>frame.getWidth()/2 && buoy.world_coord[1]>0) buoy.world_coord[1]*=-1;
     }
     
     void transformKoordinates(feature::Buoy& buoy)

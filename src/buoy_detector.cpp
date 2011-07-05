@@ -439,10 +439,10 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 		}
 	}
 	if (testMode) {
-		std::cout << "Th2 ist " << th2 << std::endl;
-		std::cout << "Steps sind " << steps << std::endl;
-		std::cout << "Übereinstimmungen: " << (counter2 / counter1)
-				<< std::endl;
+	  //std::cout << "Th2 ist " << th2 << std::endl;
+		//std::cout << "Steps sind " << steps << std::endl;
+		//std::cout << "Übereinstimmungen: " << (counter2 / counter1)
+	  //				<< std::endl;
 		cvShowImage("V", scr2);
 	}
 	return counter2 + counter3;
