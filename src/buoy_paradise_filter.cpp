@@ -69,6 +69,35 @@ void BuoyParadiseFilter::doTimestep()
         if(buoys_buffer[i].size()>0) v.push_back(buoys_buffer[i]);
     }
     buoys_buffer=v;
+
+    //  finde und entferne BuoyFeatureVectoren die keinen klar
+    //  erkennbaren gemeinsammen Radius haben
+    std::vector<unsigned int> delete_index;
+    for(unsigned int i=0;i<buoys_buffer.size();i++)
+    {
+        double median_r=0;
+        for(unsigned int j=0;j<buoys_buffer[i].size();j++)
+        {
+            median_r+=buoys_buffer[i][j].image_radius;
+        }
+        median_r/=buoys_buffer[i].size();
+        int to_small=0;
+        int to_big=0;
+        for(unsigned int j=0;j<buoys_buffer[i].size();j++)
+        {
+            if(buoys_buffer[i][j].image_radius>median_r*2) to_big++;
+            if(buoys_buffer[i][j].image_radius<median_r/2) to_small++;
+        }
+        if(to_small+to_big>buoys_buffer[i].size()*0.6)
+        {
+            delete_index.push_back(i);
+        }else
+        if(median_r>160) delete_index.push_back(i);
+    }
+    for(unsigned int i=delete_index.size();i>=1;i--)
+    {
+        buoys_buffer.erase(buoys_buffer.begin()+delete_index[i-1]);        
+    }
 }
 
 void BuoyParadiseFilter::setValidations(BuoyFeatureVector& vector)
