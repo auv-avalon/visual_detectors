@@ -38,15 +38,15 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     switch(dir)
     {
     case LEFT:
-        command.heading=0.5;
+        command.heading=0;//-0.4;   //dies mache ich nicht, weil es die simulation sprengt
         command.x=0;
-        command.y=0.7;
+        command.y=0.15;
         command.z=buoy.world_coord(2)+z;
     break;
     case RIGHT:
-        command.heading=-0.5;
+        command.heading=0;//0.4;
         command.x=0;
-        command.y=-0.7;
+        command.y=-0.15;
         command.z=buoy.world_coord(2)+z;
     break;
     }
