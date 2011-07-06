@@ -7,11 +7,14 @@
 
 namespace avalon{
 
+enum Direction{
+    LEFT, 
+    RIGHT
+};
+
 class CommandCreator{
     private:
-    base::samples::RigidBodyState ot;    
     double good_dist;
-
 
 
     public:
@@ -19,7 +22,8 @@ class CommandCreator{
 
     CommandCreator(double d);
 
-    base::AUVPositionCommand createPositionCommand(feature::Buoy &buoy, base::samples::RigidBodyState rbs);
+    base::AUVPositionCommand centerBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs);
+    base::AUVPositionCommand strafeBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, Direction dir);
 };
 
 }
