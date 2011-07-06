@@ -46,7 +46,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * @param frame expects an image in the classic opencv format
       * @return a list of all possible found buoys 
       */
-     BuoyFeatureVector detect(IplImage* frame, double factor);
+     BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane, IplImage* s_plane, double factor);
 
      /**
       * configure the min hue value for buoy extracting in hsv space
@@ -64,13 +64,13 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * configure the threshold using in houghspace accumulator
       * @param threshold value
       */
-     void configureHoughThreshold(int threshold) { configEdgeThreshold = threshold; }
+     void configureHoughThreshold(int threshold) { configHoughThreshold = threshold; }
 
      /**
       * configure the threshold using for edge detection
       * @param threshold value
       */
-     void configureEdgeThreshold(int threshold) { configHoughThreshold = threshold; }
+     void configureEdgeThreshold(int threshold) { configEdgeThreshold = threshold; }
      
      /**
      * compute two orthogonal linear regressions in order to convert 
@@ -94,6 +94,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
      int merge(IplImage* dest, IplImage* src1, IplImage* scr2,int th1, int th2,int steps, bool negativColor1, bool negativColor2, bool rekursion, int past, bool testMode);
 
      void shadingGrey(IplImage* img, int threshold);
+     BuoyFeatureVector detect2(IplImage* image, double factor);
 
      IplImage* getCopy(IplImage* src, int height);
  public: 
@@ -108,7 +109,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
      IplImage* filterHueChannel(IplImage* hsvframe);
 
      BuoyFeatureVector detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int steps, int pastAverageDark, bool testMode);
- 
+      BuoyFeatureVector buoyDetection(IplImage* img,int height, double h_threshold, double s_threshold);
  private:
      int filterByHue(int H, int S, int V);
      int filterBySaturation(int H, int S, int V);

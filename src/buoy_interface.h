@@ -43,7 +43,7 @@ class BuoyFilter {
  */
 class BuoyDetector {
  public:
-     virtual BuoyFeatureVector detect(IplImage* image, double factor) = 0;
+     virtual BuoyFeatureVector detect(IplImage* image, IplImage* h_plane,IplImage* s_plane,double factor) = 0;
 
      inline static void draw(IplImage* image, const feature::Buoy& buoy,CvScalar color) {
          cvCircle(image, cvPoint(buoy.image_x, buoy.image_y), buoy.image_radius, 
