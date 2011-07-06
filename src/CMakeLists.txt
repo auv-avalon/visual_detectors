@@ -4,6 +4,7 @@ set(SOURCES
         buoy_estimation_filter.cpp
         buoy_pos_estimation.cpp
         buoy_paradise_filter.cpp
+        command_creation.cpp
 )
 
 set(HEADERS
@@ -13,6 +14,7 @@ set(HEADERS
         buoy_estimation_filter.h
         buoy_pos_estimation.h
         buoy_paradise_filter.h
+        command_creation.h
 )
 
 rock_library(visual_detectors
