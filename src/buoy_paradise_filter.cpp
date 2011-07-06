@@ -91,8 +91,7 @@ void BuoyParadiseFilter::doTimestep()
         if(to_small+to_big>buoys_buffer[i].size()*0.6)
         {
             delete_index.push_back(i);
-        }else
-        //if(median_r>160) delete_index.push_back(i);
+        }//else if(median_r>160) delete_index.push_back(i);
     }
     for(unsigned int i=delete_index.size();i>=1;i--)
     {
