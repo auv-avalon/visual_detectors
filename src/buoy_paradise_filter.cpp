@@ -199,6 +199,7 @@ void BuoyParadiseFilter::feed(const BuoyFeatureVector& input_vector)
     void BuoyParadiseFilter::setMinSize(unsigned int i){buoys_buffer_size_min=i;}
     void BuoyParadiseFilter::setStartval(unsigned int i){startvalidation=i;}
     void BuoyParadiseFilter::setMindist(unsigned int i){mindist=i;}
-    void BuoyParadiseFilter::setMaxage(unsigned int i){maxage=(int64_t)(i*10000);}
+    void BuoyParadiseFilter::setMaxage(unsigned int i, bool b){maxage=(int64_t)(i*10000);}
+    void BuoyParadiseFilter::setMaxage(double i){maxage=(int64_t)(i*1000000);}
 
 }
