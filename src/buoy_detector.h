@@ -92,7 +92,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
 		int height, int h_threshold,int s_threshold, int v_threshold, int steps,
 		int pastAverageDark, bool testMode);
     
-     BuoyFeatureVector buoyDetection(IplImage* img,int height, double h_threshold, double s_threshold);
+     BuoyFeatureVector buoyDetection(IplImage* img,int height, double h_threshold, double s_threshold, bool testMode);
 
 
  private:
