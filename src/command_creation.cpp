@@ -25,12 +25,7 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
         double z = rbs.position[2];
         base::AUVPositionCommand command;
         command.heading =heading;
-        command.x = buoy.world_coord(0) - good_dist;  //distance
-	// cap the maximum x speed
-	if(command.x > 0.2)
-	    command.x = 0.2;
-	if(command.x < -0.2)
-	    command.x = -0.2;
+        command.x =buoy.world_coord(0) - good_dist;  //distance
         command.y =0; // no strafing
         command.z =buoy.world_coord(2)+z;	//depth
     return command;
@@ -44,13 +39,13 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     {
     case LEFT:
         command.x=0;
-        command.y=0.5;
+        command.y=0.3;
         command.heading=(atan(buoy.world_coord(0) / command.y)-M_PI/2)/8;
         command.z=buoy.world_coord(2)+z;
     break;
     case RIGHT:
         command.x=0;
-        command.y=-0.5;
+        command.y=-0.3;
         command.heading=(M_PI/2-atan(buoy.world_coord(0) / command.y))/8;
         command.z=buoy.world_coord(2)+z;
     break;
