@@ -103,7 +103,6 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 
 	cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
 
-	cv::imshow("or", dil);
 	std::vector < cv::Vec3f > circles;
 
     	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil->width / 4,
@@ -487,12 +486,13 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
 		cvThreshold(s_shaded, s_shaded, s_threshold, 255, CV_THRESH_BINARY);
 
 		//Show images
+		if(testMode){
 		cvShowImage("H binary (shaded)", h_shaded);
 		cvShowImage("S binary (shaded)", s_shaded);
 		cvShowImage("H binary", h_plane);
 		cvShowImage("S binary", s_plane);
 		cvShowImage("Result", or_plane);
-
+		}
 
 		//Release images
 		cvReleaseImage(&h_plane);
@@ -510,7 +510,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
 
 ////////SAUC-E/////////////
 std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
-		int height, double h_threshold, double s_threshold) {
+		int height, double h_threshold, double s_threshold, bool testMode) {
 
 	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
@@ -541,8 +541,8 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	//"OR" images
 	IplImage* or_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-	cvOr(h_shaded, s_plane, or_plane);
-
+//	cvOr(h_shaded, s_plane, or_plane);
+	cvCopy(s_plane, or_plane);
 	//smooth images
 	cvSmooth(or_plane, or_plane, CV_MEDIAN, 5, 5);
 
@@ -557,9 +557,10 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 //	cv::imshow("cannyOut", out);
 
 	//Show images
+	if(testMode){
 	cvShowImage("H binary (shaded)", h_shaded);
 	cvShowImage("S binary", s_plane);
-
+	}
 
 	//Release images
 	cvReleaseImage(&h_plane);
