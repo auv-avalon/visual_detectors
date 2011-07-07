@@ -21,12 +21,8 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
         if(buoy.world_coord(0)!=0)
         {
             heading = atan(buoy.world_coord(1) / buoy.world_coord(0));
-            heading*=0.2;
+            heading*=1;
         }
-        if(heading>0.2)
-            heading=0.2;
-        if(heading<-0.2)
-            heading=-0.2;
         double z = rbs.position[2];
         base::AUVPositionCommand command;
         command.heading =heading;
@@ -49,12 +45,8 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     if(buoy.world_coord(0)!=0)
     {
         heading = atan(buoy.world_coord(1) / buoy.world_coord(0));
-        heading*=0.2;
+        heading*=1;
     }
-    if(heading>0.2)
-        heading=0.2;
-    if(heading<-0.2)
-        heading=-0.2;
 
     if(intensity>0){  //strafe nach links
         if(heading>0) heading=0;  //hier nicht nach links drehen
