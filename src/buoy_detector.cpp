@@ -1,7 +1,7 @@
 #include "buoy_detector.h"
 #include <stdio.h>
 #include "opencv/highgui.h"
-
+#include <Eigen/Core>
 namespace avalon {
 
 // ---------------------------------------------------------------------------------------
@@ -22,10 +22,21 @@ HSVColorBuoyDetector::HSVColorBuoyDetector() :
 HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 }
 
+
 // ---------------------------------------------------------------------------------------
 
+void HSVColorBuoyDetector::configureLowHue(int low) {
+	if (0 <= low && low <= 255)
+		configLowHue = low;
+}
 
-std::vector<feature::Buoy> HSVColorBuoyDetector::detect2(IplImage* frame,
+void HSVColorBuoyDetector::configureHighHue(int high) {
+	if (0 <= high && high <= 255)
+		configHighHue = high;
+}
+
+
+std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 		double factor) {
 	//	// Vector for all buoys
 	std::vector < feature::Buoy > result;
@@ -63,6 +74,8 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect2(IplImage* frame,
 
 	return result;
 }
+int found =0;
+int notFound =0;
 
 std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 		IplImage* h_plane, IplImage* s_plane, double factor) {
@@ -86,34 +99,22 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 
 	cv::GaussianBlur( out, out, cv::Size(gaussVal * 2 - 1, gaussVal * 2 - 1), 2, 2 );
 */
-	CvMemStorage* storage = cvCreateMemStorage(0);
+
 
 	cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
-//	cvSmooth(s_plane, s_plane, CV_GAUSSIAN, 13, 13);
+
 	cv::imshow("or", dil);
 	std::vector < cv::Vec3f > circles;
 
     	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil->width / 4,
 			configEdgeThreshold, configHoughThreshold, 30, 150);
 
-	//	CvSeq* circles = cvHoughCircles(dil, storage, CV_HOUGH_GRADIENT, 2,
-	//			frame->width / 3, configEdgeThreshold, configHoughThreshold);
-
-	//	cvReleaseImage(&s_plane);
 	cvReleaseImage(&dil);
-	//	std::cout << "Circles: "<< circles.size() << std::endl;
+//	bool wasFound=false;
 	for (int i = 0; i < circles.size(); i++) {
-		//		float* circle = (float*) cvGetSeqElem(circles, i);
 		int x = cvRound(circles[i][0] / factor);
 		int y = cvRound(circles[i][1] / factor);
 		int r = cvRound(circles[i][2] / factor);
-		/*
-		 int x = (int) (circle[0] / factor);
-		 int y = (int) (circle[1] / factor);
-		 int r = (int) (circle[2] / factor);
-		 */
-		int h_value =
-				((uchar *) (h_plane->imageData + y * h_plane->widthStep))[x];
 
 		int counter = 0;
 		for (int j = x - 2; j <= x + 2; j++) {
@@ -356,11 +357,8 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 	float counter1 = 0;
 	float counter2 = 0;
 	float counter3 = 0;
-	bool found = false;
-	int yToStart = 0;
-	for (int y = 0; y < height; y++) {
-		int pixInX = 0;
 
+	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 
 			int v = ((uchar *) (src1->imageData + y * src1->widthStep))[x];
@@ -374,13 +372,7 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 				((uchar *) (dest->imageData + y * dest->widthStep))[x]
 						= chosenValue = posColor1;
 			}
-			//			if(!found&&chosenValue==0){
-			//				pixInX++;
-			//				found=pixInX>10?true:found;
-			//				yToStart=y;
-			//			}
 
-			//			if (found) {
 			v = ((uchar *) (scr2->imageData + y * scr2->widthStep))[x];
 
 			if (v >= th2) {
@@ -413,7 +405,7 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 					}
 				}
 			}
-			//			}
+
 		}
 	}
 
@@ -424,7 +416,7 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 
 		} else {
 
-			if (counter2 + counter3 <= ((height - yToStart) * width)
+			if (counter2 + counter3 <= ((height) * width)
 					/ (double) 10 && (past == 0 || (past * 250) / (double) 100
 					> counter2 + counter3)) {
 				if ((counter2 / counter1) < 0.25 && (th2 + steps) <= 255) {
@@ -441,124 +433,21 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 		}
 	}
 	if (testMode) {
-		std::cout << "Th2 ist " << th2 << std::endl;
-		//std::cout << "Steps sind " << steps << std::endl;
-		//		std::cout << "Übereinstimmungen: " << (counter2 / counter1)
-		//	  				<< std::endl;
 		IplImage* v_plane = cvCreateImage(cvGetSize(scr2), 8, 1);
-		merge(v_plane, scr2, th2, true);
+		cvThreshold(scr2,v_plane,  th2, 255, CV_THRESH_BINARY);
 		cvShowImage("V binary", v_plane);
 		cvShowImage("V", scr2);
 	}
 	return counter2 + counter3;
 }
 
-void HSVColorBuoyDetector::imageToSquares(IplImage* img, bool smooth,
-		int squareSize, bool equalizeH, bool equalizeS, bool equalizeV,
-		bool backToRGB) {
-	IplImage* imgAsHSV = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
-	cvCvtColor(img, imgAsHSV, CV_RGB2HSV);
-	if (smooth) {
-		cvSmooth(imgAsHSV, imgAsHSV, CV_GAUSSIAN);
-	}
-	IplImage* h_plane = cvCreateImage(cvGetSize(imgAsHSV), 8, 1);
-	IplImage* s_plane = cvCreateImage(cvGetSize(imgAsHSV), 8, 1);
-	IplImage* v_plane = cvCreateImage(cvGetSize(imgAsHSV), 8, 1);
-
-	cvCvtPixToPlane(imgAsHSV, h_plane, s_plane, v_plane, 0);
-	if (equalizeH) {
-		cvEqualizeHist(h_plane, h_plane);
-	}
-	if (equalizeS) {
-		cvEqualizeHist(s_plane, s_plane);
-	}
-	if (equalizeV) {
-		cvEqualizeHist(v_plane, v_plane);
-	}
-	int height = img->height;
-	int width = img->width;
-	int widthSteps = width / squareSize;
-	int heightSteps = height / squareSize;
-
-	int dif = squareSize * squareSize;
-	int myArrayH[widthSteps][heightSteps];
-	int myArrayS[widthSteps][heightSteps];
-	int myArrayV[widthSteps][heightSteps];
-
-	for (int i = 0; i < widthSteps; i++) {
-		for (int k = 0; k < heightSteps; k++) {
-			int sumH = 0;
-			int sumS = 0;
-			int sumV = 0;
-			for (int x = i * squareSize; x < (i + 1) * squareSize; x++) {
-
-				for (int y = k * squareSize; y < (k + 1) * squareSize; y++) {
-					sumH += ((uchar *) (h_plane->imageData + y
-							* h_plane->widthStep))[x];
-					sumS += ((uchar *) (s_plane->imageData + y
-							* s_plane->widthStep))[x];
-					sumV += ((uchar *) (v_plane->imageData + y
-							* v_plane->widthStep))[x];
-				}
-			}
-			for (int x = i * squareSize; x < (i + 1) * squareSize; x++) {
-
-				for (int y = k * squareSize; y < (k + 1) * squareSize; y++) {
-					((uchar *) (h_plane->imageData + y * h_plane->widthStep))[x]
-							= int(sumH / dif);
-					((uchar *) (s_plane->imageData + y * s_plane->widthStep))[x]
-							= int(sumS / dif);
-					((uchar *) (v_plane->imageData + y * v_plane->widthStep))[x]
-							= int(sumV / dif);
-				}
-			}
-			myArrayH[i][k] = int(sumH / dif);
-			myArrayS[i][k] = int(sumS / dif);
-			myArrayV[i][k] = int(sumV / dif);
-
-		}
-	}
-
-	for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-			*(uchar*) (img->imageData + (y) * img->widthStep + (x) * 3 + 0)
-					= myArrayH[x / squareSize][y / squareSize];
-			*(uchar*) (img->imageData + (y) * img->widthStep + (x) * 3 + 1)
-					= myArrayS[x / squareSize][y / squareSize];
-			*(uchar*) (img->imageData + (y) * img->widthStep + (x) * 3 + 2)
-					= myArrayV[x / squareSize][y / squareSize];
-		}
-	}
-	if (backToRGB) {
-		cvCvtColor(img, img, CV_HSV2RGB);
-	}
-	cvReleaseImage(&imgAsHSV);
-	cvReleaseImage(&h_plane);
-	cvReleaseImage(&s_plane);
-	cvReleaseImage(&v_plane);
-}
-
-IplImage* HSVColorBuoyDetector::getCopy(IplImage* src, int newHeight) {
-	int curHeight = src -> height;
-	double factor = newHeight / (double) curHeight;
-	IplImage *dst = cvCreateImage(
-			cvSize((int) ((src->width) * factor),
-					(int) ((src->height) * factor)), 8, 3);
-	cvResize(src, dst, 1);
-	return dst;
-}
-
-void HSVColorBuoyDetector::shadingGrey(IplImage* img, int threshold) {
-
-}
 
 std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
-		int height, int mergeHValue, int mergeVValue, int steps,
+		int height, int h_threshold,int s_threshold, int v_threshold, int steps,
 		int pastAverageDark, bool testMode) {
 
 		IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 		cvCopy(img, copy);
-		//	IplImage* copy = getCopy(img, height);// Resize the image to a specific height
 		double factor = 1;//height / (double) (img->height); // The resize factor
 
 		//Split Image to single HSV planes
@@ -581,29 +470,26 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
 
 		//Get the buoy
 		IplImage* or_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		merge(or_plane, h_plane,v_shaded, mergeHValue, mergeVValue, steps, false,
+		merge(or_plane, h_plane,v_shaded, h_threshold, v_threshold, steps, false,
 				true, true, pastAverageDark, testMode);
-//		//create binary images
-//		cvThreshold(h_shaded, h_shaded, h_threshold, 255, CV_THRESH_BINARY);
-//		cvThreshold(s_plane, s_plane, s_threshold, 255, CV_THRESH_BINARY);
 
-//		//"OR" images
 
-//		cvOr(h_shaded, s_plane, or_plane);
-
-//		//smooth images
-//		cvSmooth(or_plane, or_plane, CV_MEDIAN, 5, 5);
 
 		//detect buoys
-		std::vector < feature::Buoy > result = detect2(or_plane, factor);
+		std::vector < feature::Buoy > result = detect(or_plane, factor);
 
-	//	cv::Mat out;
-	//	cv::Canny(or_plane, out, (int) configEdgeThreshold / 4,
-	//			(int) configEdgeThreshold, 3);
-	//	cv::imshow("cannyOut", out);
+		//get binary images
+		cvThreshold(h_plane, h_plane, h_threshold, 255, CV_THRESH_BINARY);
+		cvThreshold(s_plane, s_plane, s_threshold, 255, CV_THRESH_BINARY);
+
+
+		cvThreshold(h_shaded, h_shaded, h_threshold, 255, CV_THRESH_BINARY);
+		cvThreshold(s_shaded, s_shaded, s_threshold, 255, CV_THRESH_BINARY);
 
 		//Show images
 		cvShowImage("H binary (shaded)", h_shaded);
+		cvShowImage("S binary (shaded)", s_shaded);
+		cvShowImage("H binary", h_plane);
 		cvShowImage("S binary", s_plane);
 		cvShowImage("Result", or_plane);
 
@@ -658,7 +544,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	cvOr(h_shaded, s_plane, or_plane);
 
 	//smooth images
-//	cvSmooth(or_plane, or_plane, CV_MEDIAN, 5, 5);
+	cvSmooth(or_plane, or_plane, CV_MEDIAN, 5, 5);
 
 
 	//detect buoys

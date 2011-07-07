@@ -80,31 +80,21 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * @param 
       * @return 
       */
-     IplImage* createHistogram(IplImage* img, int maxRange);
 
-     void imageToSquares(IplImage* img, bool smooth, int squareSize, bool equalizeH, bool equalizeS, bool equalizeV, bool backToRGB);
+     int merge(IplImage* dest, IplImage* src1, IplImage* scr2,
+		int th1, int th2, int steps, bool negativColor1, bool negativColor2,
+		bool rekursion, int past, bool testMode);
 
-     void merge(IplImage* dest, IplImage* next, int th, bool negativColor);
+     BuoyFeatureVector detect(IplImage* image, double factor);
+     BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane, IplImage* s_plane, double factor);
 
-     int merge(IplImage* dest, IplImage* src1, IplImage* scr2,int th1, int th2,int steps, bool negativColor1, bool negativColor2, bool rekursion, int past, bool testMode);
+     BuoyFeatureVector detectBuoy(IplImage* img,
+		int height, int h_threshold,int s_threshold, int v_threshold, int steps,
+		int pastAverageDark, bool testMode);
+    
+     BuoyFeatureVector buoyDetection(IplImage* img,int height, double h_threshold, double s_threshold);
 
-     void shadingGrey(IplImage* img, int threshold);
-     BuoyFeatureVector detect2(IplImage* image, double factor);
 
-     IplImage* getCopy(IplImage* src, int height);
- public: 
-     /**
-      * helper function to output a specfic HSV channel. Don't forget
-      * to release the image with cvReleaseImage(&frame)
-      * @param channel type of channel
-      * @param frame a given IplImage
-      */
-     IplImage* getChannel(enum Channel channel, IplImage* hsvframe);
-
-     IplImage* filterHueChannel(IplImage* hsvframe);
-
-     BuoyFeatureVector detectBuoy(IplImage* img, int height, int mergeHValue, int mergeVValue, int steps, int pastAverageDark, bool testMode);
-      BuoyFeatureVector buoyDetection(IplImage* img,int height, double h_threshold, double s_threshold);
  private:
      int filterByHue(int H, int S, int V);
      int filterBySaturation(int H, int S, int V);
