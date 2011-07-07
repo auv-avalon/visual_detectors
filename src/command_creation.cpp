@@ -36,24 +36,20 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
     return command;
 }
 
-base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, Direction dir, double desired_buoy_depth)
+base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double intensity, double desired_buoy_depth)
 {
     base::AUVPositionCommand command;
     double z = rbs.position[2];
-    switch(dir)
-    {
-    case LEFT:
+    if(intensity>0){
         command.x=0;
-        command.y=0.5;
+        command.y=intensity;
         command.heading=(atan(buoy.world_coord(0) / command.y)-M_PI/2)/8;
         command.z = desired_buoy_depth;//buoy.world_coord(2)+z;	//depth
-    break;
-    case RIGHT:
+    }else{
         command.x=0;
-        command.y=-0.5;
+        command.y=intensity;
         command.heading=(M_PI/2-atan(buoy.world_coord(0) / command.y))/8;
         command.z = desired_buoy_depth;//buoy.world_coord(2)+z;	//depth
-    break;
     }
     return command;
 }
