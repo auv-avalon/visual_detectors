@@ -4,6 +4,7 @@ set(SOURCES
         buoy_estimation_filter.cpp
         buoy_pos_estimation.cpp
         buoy_paradise_filter.cpp
+        command_creation.cpp
 )
 
 set(HEADERS
@@ -13,19 +14,17 @@ set(HEADERS
         buoy_estimation_filter.h
         buoy_pos_estimation.h
         buoy_paradise_filter.h
+        command_creation.h
 )
 
 rock_library(visual_detectors
     SOURCES ${SOURCES}
-    DEPS_PKGCONFIG opencv
-    DEPS_PKGCONFIG avalon_base-types
+    DEPS_PKGCONFIG opencv avalon_base-types frame_helper
     HEADERS ${HEADERS}
 )
 
 rock_executable(visual_detectors_bin main.cpp
     DEPS visual_detectors
-    DEPS_PKGCONFIG opencv
-    DEPS_PKGCONFIG avalon_base-types
-    DEPS_PKGCONFIG frame_helper
+    DEPS_PKGCONFIG opencv avalon_base-types frame_helper
 )
 
