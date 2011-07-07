@@ -39,13 +39,13 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     {
     case LEFT:
         command.x=0;
-        command.y=0.4;
+        command.y=0.3;
         command.heading=(atan(buoy.world_coord(0) / command.y)-M_PI/2)/8;
         command.z=buoy.world_coord(2)+z;
     break;
     case RIGHT:
         command.x=0;
-        command.y=-0.4;
+        command.y=-0.3;
         command.heading=(M_PI/2-atan(buoy.world_coord(0) / command.y))/8;
         command.z=buoy.world_coord(2)+z;
     break;
