@@ -139,119 +139,55 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 				feature::Buoy data(x, y, r);
 
 				result.push_back(data);
+//				wasFound=true;
 
 		}
+
+
 	}
-
-	//	cvReleaseImage(&imgAsHSV);
-
+//	if(wasFound){
+//		found++;
+//	}
+//	else
+//	{
+//		notFound++;
+//	}
+//	std::cout << "Found: " << found <<std::endl;
+//	std::cout << "Not found: " << notFound <<std::endl;
 	return result;
 }
 
-inline IplImage* HSVColorBuoyDetector::getChannel(Channel channel,
-		IplImage* hsvframe) {
-	IplImage* h_plane = cvCreateImage(cvGetSize(hsvframe), 8, 1);
-	IplImage* s_plane = cvCreateImage(cvGetSize(hsvframe), 8, 1);
-	IplImage* v_plane = cvCreateImage(cvGetSize(hsvframe), 8, 1);
 
-	IplImage* output;
 
-	cvCvtPixToPlane(hsvframe, h_plane, s_plane, v_plane, 0);
-
-	switch (channel) {
-	case HUE:
-		output = h_plane;
-		cvReleaseImage(&s_plane);
-		cvReleaseImage(&v_plane);
-		break;
-
-	case SATURATION:
-		output = s_plane;
-		cvReleaseImage(&h_plane);
-		cvReleaseImage(&v_plane);
-		break;
-
-	case VALUE:
-		output = v_plane;
-		cvReleaseImage(&h_plane);
-		cvReleaseImage(&s_plane);
-		break;
-	}
-
-	return output;
-}
-
-IplImage* HSVColorBuoyDetector::filterHueChannel(IplImage* imgAsHSV) {
-	uchar *p, *pEnd, *pLine;
-
-	pLine = (uchar*) imgAsHSV->imageData;
-
-	for (int y = 0; y < imgAsHSV->height; y++) {
-		for (p = pLine, pEnd = p + (imgAsHSV->width * imgAsHSV->nChannels); p
-				< pEnd; p += imgAsHSV->nChannels) {
-
-			uchar H = *(p + 0); // Hue
-			uchar S = *(p + 1); // Saturation
-			uchar V = *(p + 2); // Value
-
-			int color = filterByHue(H, S, V);
-
-			*(p + 0) = cCTHue[color];
-			*(p + 1) = cCTSat[color];
-			*(p + 2) = cCTVal[color];
-
-		}
-		pLine += imgAsHSV->widthStep / sizeof(uchar);
-	}
-
-	return imgAsHSV;
-}
-
-// Wenn der Farbton nicht einen derer der Boje entspricht, wird enum schwarz ausgegeben.
-// Ansonsten -1. Weiter wird überprüft, ob dieser Pixel jener mit dem höchsten Sättigungs-Wert ist.
-// Wenn ja, so wird dieser als neuer höchster Wert gesetzt.
-int HSVColorBuoyDetector::filterByHue(int H, int S, int V) {
-	if (H <= configLowHue || H >= configHighHue) {
-		satMax = (satMax < S) ? S : satMax;
-		valMax = (valMax < S) ? S : valMax;
-		return cRED;
-	} else {
-		return cBLACK;
-	}
-}
-
-//Jene Pixel, deren Sättigungswerte unter einem bestimmten Prozentsatz des zuvor ermittelten
-//höchsten Sättigungswert liegen, werden  schwarz eingefärbt. Alle Anderen rot.
-int HSVColorBuoyDetector::filterBySaturation(int H, int S, int V) {
-	if ((S > (255 / (double) 100) * 20)
-	//||(S > (valMax / (double) 100) * 10)
-	) {
-		//return cRED;
-		return -1;
-
-	} else {
-		return cBLACK;
-	}
-}
-
-void HSVColorBuoyDetector::configureLowHue(int low) {
-	if (0 <= low && low <= 255)
-		configLowHue = low;
-}
-
-void HSVColorBuoyDetector::configureHighHue(int high) {
-	if (0 <= high && high <= 255)
-		configHighHue = high;
-}
 
 void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
+
 
 	int height = src->height;
 	int width = src->width;
 	int rowSize = src->widthStep;
 	char *pixelStart = src->imageData;
 
-	float a0[3][height][width], slope[3][2][width], y0[3][2][width], mean[3],
+
+
+	Eigen::MatrixXf a0R(height,width);
+	Eigen::MatrixXf a0G(height,width);
+	Eigen::MatrixXf a0B(height,width);
+
+	Eigen::MatrixXf a1R(height,width);
+	Eigen::MatrixXf a1G(height,width);
+	Eigen::MatrixXf a1B(height,width);
+
+	Eigen::MatrixXf slopeR(2,width);
+	Eigen::MatrixXf slopeG(2,width);
+	Eigen::MatrixXf slopeB(2,width);
+
+	Eigen::MatrixXf y0R(2,width);
+	Eigen::MatrixXf y0G(2,width);
+	Eigen::MatrixXf y0B(2,width);
+
+
+	float  mean[3],
 			sum[3], sxy[3], sx2, mid, factor[3];
 	int a1[3][height][width], min[3], max[3];
 
@@ -259,9 +195,13 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
-			a0[0][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
-			a0[1][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
-			a0[2][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
+			a0R(y,x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
+			a0G(y,x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
+			a0B(y,x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
+
+//			a0[0][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
+//			a0[1][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
+//			a0[2][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
 		}
 	}
 
@@ -272,9 +212,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 			sum[z] = 0;
 		}
 		for (int y = 0; y < height; y++) {
-			for (int z = 0; z < 3; z++) {
-				sum[z] += (int) a0[z][y][x];
-			}
+//			for (int z = 0; z < 3; z++) {
+//				sum[z] += (int) a0[z][y][x];
+//			}
+			sum[0] += (int) a0R(y,x);
+			sum[1] += (int) a0G(y,x);
+			sum[2] += (int) a0B(y,x);
 		}
 		for (int z = 0; z < 3; z++) {
 			mean[z] = sum[z] / height;
@@ -282,15 +225,25 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 		}
 		sx2 = 0;
 		for (int y = 0; y < height; y++) {
-			for (int z = 0; z < 3; z++) {
-				sxy[z] += (y - mid) * a0[z][y][x] - mean[z];
-			}
+//			for (int z = 0; z < 3; z++) {
+//				sxy[z] += (y - mid) * a0[z][y][x] - mean[z];
+//			}
+			sxy[0] += (y - mid) * a0R(y,x) - mean[0];
+			sxy[1] += (y - mid) * a0G(y,x) - mean[1];
+			sxy[2] += (y - mid) * a0B(y,x) - mean[2];
+
 			sx2 += (y - mid) * (y - mid);
 		}
-		for (int z = 0; z < 3; z++) {
-			slope[z][1][x] = sxy[z] / sx2;
-			y0[z][1][x] = mean[z] - slope[z][1][x] * mid;
-		}
+//		for (int z = 0; z < 3; z++) {
+//			slope[z][1][x] = sxy[z] / sx2;
+//			y0[z][1][x] = mean[z] - slope[z][1][x] * mid;
+			slopeR(1,x)=sxy[0] / sx2;
+			slopeG(1,x)=sxy[1] / sx2;
+			slopeB(1,x)=sxy[2] / sx2;
+			y0R(1,x)= mean[0] - slopeR(1,x) * mid;
+			y0G(1,x)= mean[1] - slopeG(1,x) * mid;
+			y0B(1,x)= mean[2] - slopeB(1,x) * mid;
+//		}
 	}
 
 	//regression 2: compute the regression line of any row
@@ -300,9 +253,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 			sum[z] = 0;
 		}
 		for (int x = 0; x < width; x++) {
-			for (int z = 0; z < 3; z++) {
-				sum[z] += slope[z][1][x] * y + y0[z][1][x];
-			}
+//			for (int z = 0; z < 3; z++) {
+//				sum[z] += slope[z][1][x] * y + y0[z][1][x];
+//			}
+			sum[0]+=slopeR(1,x)*y+y0R(1,x);
+			sum[1]+=slopeG(1,x)*y+y0G(1,x);
+			sum[2]+=slopeB(1,x)*y+y0B(1,x);
 		}
 		for (int z = 0; z < 3; z++) {
 			mean[z] = sum[z] / width;
@@ -310,16 +266,29 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 		}
 		sx2 = 0;
 		for (int x = 0; x < width; x++) {
-			for (int z = 0; z < 3; z++) {
-				sxy[z] += (x - mid) * (slope[z][1][x] * y + y0[z][1][x]
-						- mean[z]);
-			}
+//			for (int z = 0; z < 3; z++) {
+//				sxy[z] += (x - mid) * (slope[z][1][x] * y + y0[z][1][x]
+//						- mean[z]);
+//			}
+			sxy[0] += (x - mid) * (slopeR(1,x) * y + y0R(1,x)
+									- mean[0]);
+			sxy[1] += (x - mid) * (slopeG(1,x) * y + y0G(1,x)
+									- mean[1]);
+			sxy[2] += (x - mid) * (slopeB(1,x) * y + y0B(1,x)
+									- mean[2]);
 			sx2 += (x - mid) * (x - mid);
 		}
-		for (int z = 0; z < 3; z++) {
-			slope[z][0][y] = sxy[z] / sx2;
-			y0[z][0][y] = mean[z] - slope[z][0][y] * mid;
-		}
+//		for (int z = 0; z < 3; z++) {
+//			slope[z][0][y] = sxy[z] / sx2;
+//			y0[z][0][y] = mean[z] - slope[z][0][y] * mid;
+//		}
+		slopeR(0,y)=sxy[0] / sx2;
+		slopeG(0,y)=sxy[1] / sx2;
+		slopeB(0,y)=sxy[2] / sx2;
+
+		y0R(0,y)=mean[0] - slopeR(0,y) * mid;
+		y0G(0,y)=mean[1] - slopeG(0,y) * mid;
+		y0B(0,y)=mean[2] - slopeB(0,y) * mid;
 	}
 
 	//shading correction: subtract the flat background image from the
@@ -330,12 +299,23 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	}
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			for (int z = 0; z < 3; z++) {
-				a1[z][y][x] = (int) (a0[z][y][x] - (slope[z][0][y] * x
-						+ y0[z][0][y]));
-				min[z] = (a1[z][y][x] < min[z]) ? a1[z][y][x] : min[z];
-				max[z] = (a1[z][y][x] > max[z]) ? a1[z][y][x] : max[z];
-			}
+//			for (int z = 0; z < 3; z++) {
+//				a1[z][y][x] = (int) (a0[z][y][x] - (slope[z][0][y] * x
+//						+ y0[z][0][y]));
+//				min[z] = (a1[z][y][x] < min[z]) ? a1[z][y][x] : min[z];
+//				max[z] = (a1[z][y][x] > max[z]) ? a1[z][y][x] : max[z];
+//			}
+			a1R(y,x) = (int) (a0R(y,x) - (slopeR(0,y) * x+ y0R(0,y)));
+			a1G(y,x) = (int) (a0G(y,x) - (slopeG(0,y) * x+ y0G(0,y)));
+			a1B(y,x) = (int) (a0B(y,x) - (slopeB(0,y) * x+ y0B(0,y)));
+
+			min[0] = (a1R(y,x) < min[0]) ? a1R(y,x) : min[0];
+			min[1] = (a1G(y,x) < min[1]) ? a1G(y,x) : min[1];
+			min[2] = (a1B(y,x) < min[2]) ? a1B(y,x) : min[2];
+
+			max[0] = (a1R(y,x) > max[0]) ? a1R(y,x) : max[0];
+			max[1] = (a1G(y,x) > max[1]) ? a1G(y,x) : max[1];
+			max[2] = (a1B(y,x) > max[2]) ? a1B(y,x) : max[2];
 		}
 	}
 	for (int z = 0; z < 3; z++) {
@@ -343,9 +323,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	}
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
-			for (int z = 0; z < 3; z++) {
-				a0[z][y][x] = (int) ((a1[z][y][x] - min[z]) * factor[z]);
-			}
+//			for (int z = 0; z < 3; z++) {
+//				a0[z][y][x] = (int) ((a1[z][y][x] - min[z]) * factor[z]);
+//			}
+			a0R(y,x) =(int) ( (a1R(y,x)-min[0])*factor[0]);
+			a0G(y,x) =(int) ( (a1G(y,x)-min[1])*factor[1]);
+			a0B(y,x) =(int) ( (a1B(y,x)-min[2])*factor[2]);
 		}
 	}
 	rowSize = dest->widthStep;
@@ -353,80 +336,13 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
 
-			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0) = a0[0][y][x];
-			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1) = a0[1][y][x];
-			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2) = a0[2][y][x];
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0) = a0R(y,x);
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1) = a0G(y,x);
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2) = a0B(y,x);
 		}
 	}
 }
 
-IplImage* HSVColorBuoyDetector::createHistogram(IplImage* img, int maxRange) {
-	int numBins = maxRange + 1;
-	float range[] = { 0, maxRange };
-	float *ranges[] = { range };
-	IplImage* histImage = cvCreateImage(cvSize(320, 200), 8, 1);
-	CvHistogram* hist = cvCreateHist(1, &numBins, CV_HIST_ARRAY, ranges, 1);
-	cvCalcHist(&img, hist, 0, NULL);
-	float histMax = 0;
-	//grab the min and max values and their indeces
-	cvGetMinMaxHistValue(hist, 0, &histMax, 0, 0);
-	//scale the bin values so that they will fit in the image representation
-	cvScale(hist->bins, hist->bins, ((double) histImage->height) / histMax, 0);
-
-	//set all histogram values to 255
-	cvSet(histImage, cvScalarAll(maxRange), 0);
-	//create a factor for scaling along the width
-	int hist_size = 255;
-	int bin_w = cvRound((double) histImage->width / hist_size);
-
-	float mean;
-	for (int i = 0; i < hist_size; i++) {
-		//draw the histogram data onto the histogram image
-		cvRectangle(
-				histImage,
-				cvPoint(i * bin_w, histImage->height),
-				cvPoint((i + 1) * bin_w,
-						histImage->height - cvRound(cvGetReal1D(hist->bins, i))),
-				cvScalarAll(0), -1, 8, 0);
-		//get the value at the current histogram bucket
-		float* bins = cvGetHistValue_1D(hist, i);
-		//increment the mean value
-		mean += bins[0];
-	}
-	//finish mean calculation
-	mean /= hist_size;
-	float variance;
-	//go back through now that mean has been calculated in order to calculate variance
-	for (int i = 0; i < hist_size; i++) {
-		float* bins = cvGetHistValue_1D(hist, i);
-		variance += pow((bins[0] - mean), 2);
-	}
-
-	return histImage;
-
-}
-
-void HSVColorBuoyDetector::merge(IplImage* dest, IplImage* next, int th,
-		bool negativColor) {
-	int negColor = negativColor ? 255 : 0;
-	int posColor = negativColor ? 0 : 255;
-	int height = dest->height;
-	int width = dest->width;
-	for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-
-			int v = ((uchar *) (next->imageData + y * next->widthStep))[x];
-
-			if (v >= th) {
-				((uchar *) (dest->imageData + y * dest->widthStep))[x]
-						= negColor;
-			} else {
-				((uchar *) (dest->imageData + y * dest->widthStep))[x]
-						= posColor;
-			}
-		}
-	}
-}
 
 int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 		int th1, int th2, int steps, bool negativColor1, bool negativColor2,

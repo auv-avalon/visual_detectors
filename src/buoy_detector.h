@@ -41,12 +41,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
       */
      ~HSVColorBuoyDetector();
 
-     /**
-      * let this implementation find circles in a given image
-      * @param frame expects an image in the classic opencv format
-      * @return a list of all possible found buoys 
-      */
-     BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane, IplImage* s_plane, double factor);
+     //BuoyFeatureVector detect(IplImage* image, double factor);
 
      /**
       * configure the min hue value for buoy extracting in hsv space
