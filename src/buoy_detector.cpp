@@ -106,10 +106,10 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 	std::vector < cv::Vec3f > circles;
 
     	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil->width / 4,
-			configEdgeThreshold, configHoughThreshold, 12, 150);
+			configEdgeThreshold, configHoughThreshold, 15, 150);
 
 	cvReleaseImage(&dil);
-//	bool wasFound=false;
+	bool wasFound=false;
 	for (int i = 0; i < circles.size(); i++) {
 		int x = cvRound(circles[i][0] / factor);
 		int y = cvRound(circles[i][1] / factor);
@@ -139,7 +139,8 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 				feature::Buoy data(x, y, r);
 
 				result.push_back(data);
-//				wasFound=true;
+				wasFound=true;
+				//if(testmode) std::cout << "Buoy Found" <<std::endl;
 
 		}
 
@@ -152,8 +153,10 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 //	{
 //		notFound++;
 //	}
+
 //	std::cout << "Found: " << found <<std::endl;
 //	std::cout << "Not found: " << notFound <<std::endl;
+
 	return result;
 }
 
