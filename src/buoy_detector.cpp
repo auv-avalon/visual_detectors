@@ -74,8 +74,8 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 
 	return result;
 }
-int found =0;
-int notFound =0;
+int found = 0;
+int notFound = 0;
 
 std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 		IplImage* h_plane, IplImage* s_plane, double factor) {
@@ -85,31 +85,30 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 	IplImage* dil = cvCreateImage(cvGetSize(frame), 8, 1);
 
 	cvDilate(frame, dil, NULL, 2);
-//	cvCopy(frame, dil);
-//
-//	int cannyVal = 250;
-//	int gaussVal = 2;
-//	int erodeVal = 3;
-//
-//	cv::Mat out;
+	//	cvCopy(frame, dil);
+	//
+	//	int cannyVal = 250;
+	//	int gaussVal = 2;
+	//	int erodeVal = 3;
+	//
+	//	cv::Mat out;
 
-//	cv::erode(dil, out, cv::Mat(), cv::Point(-1, -1), erodeVal);
-/*
-	cv::Canny(out, out, cannyVal / 2, cannyVal, 3 );
+	//	cv::erode(dil, out, cv::Mat(), cv::Point(-1, -1), erodeVal);
+	/*
+	 cv::Canny(out, out, cannyVal / 2, cannyVal, 3 );
 
-	cv::GaussianBlur( out, out, cv::Size(gaussVal * 2 - 1, gaussVal * 2 - 1), 2, 2 );
-*/
-
+	 cv::GaussianBlur( out, out, cv::Size(gaussVal * 2 - 1, gaussVal * 2 - 1), 2, 2 );
+	 */
 
 	cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
 
 	std::vector < cv::Vec3f > circles;
 
-    	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil->width / 4,
-			configEdgeThreshold, configHoughThreshold, 15, 150);
+	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil->width / 4,
+			configEdgeThreshold, configHoughThreshold, 10, 150);
 
 	cvReleaseImage(&dil);
-	bool wasFound=false;
+	//	bool wasFound=false;
 	for (int i = 0; i < circles.size(); i++) {
 		int x = cvRound(circles[i][0] / factor);
 		int y = cvRound(circles[i][1] / factor);
