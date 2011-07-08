@@ -66,7 +66,8 @@ class BuoyParadiseFilter : public BuoyFilter
     void setMinSize(unsigned int i);
     void setStartval(unsigned int i);
     void setMindist(unsigned int i);
-    void setMaxage(unsigned int i);
+    void setMaxage(unsigned int i, bool b);
+    void setMaxage(double i);
 
  private:
 
