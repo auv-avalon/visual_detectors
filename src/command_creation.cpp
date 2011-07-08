@@ -26,7 +26,7 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
         double z = rbs.position[2];
         base::AUVPositionCommand command;
         command.heading =heading;
-        command.x = buoy.world_coord(0) - good_dist;  //distance
+        command.x = (buoy.world_coord(0) - good_dist)*0.2;  //distance
 	// cap the maximum x speed
 	if(command.x > 0.2)
 	    command.x = 0.2;
