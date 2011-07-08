@@ -140,7 +140,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 
 				result.push_back(data);
 				wasFound=true;
-				std::cout << "Buoy Found" <<std::endl;
+				//if(testmode) std::cout << "Buoy Found" <<std::endl;
 
 		}
 
