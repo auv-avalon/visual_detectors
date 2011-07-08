@@ -20,7 +20,7 @@ void CommandCreator::setGoodDist(double d)
 }
 
 
-base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth)
+base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth, double maxX)
 {
         double heading = 0;
         if(buoy.world_coord(0)!=0)
@@ -33,16 +33,16 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
         command.heading =heading;
         command.x = (buoy.world_coord(0) - good_dist)*0.2;  //distance
 	// cap the maximum x speed
-	if(command.x > 0.5)
-	    command.x = 0.5;
-	if(command.x < -0.5)
-	    command.x = -0.5;
-        command.y =0; // no strafing
+	if(command.x > maxX)
+	    command.x = maxX;
+	if(command.x < -maxX)
+	    command.x = -maxX;
+        command.y = 0; // no strafing
         command.z = desired_buoy_depth;//buoy.world_coord(2)+z;	//depth
     return command;
 }
 
-base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double intensity, double desired_buoy_depth)
+base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double intensity, double desired_buoy_depth, double headingFactor, double headingModulation)
 {
     base::AUVPositionCommand command;
     //double z = rbs.position[2];
@@ -50,20 +50,20 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     if(buoy.world_coord(0)!=0)
     {
         heading = atan(buoy.world_coord(1) / buoy.world_coord(0));
-        heading*=1;
+        heading*=headingFactor;
     }
 
     if(intensity>0){  //strafe nach links
         if(heading>0) heading=0;  //hier nicht nach links drehen
         command.x=0;
         command.y=intensity;
-        command.heading=heading - 0.2;
+        command.heading=heading - headingModulation;
         command.z = desired_buoy_depth;//buoy.world_coord(2)+z;	//depth
     }else{            //strafe nach rechts
         if(heading<0) heading=0;  //hier nicht nach rechts drehen
         command.x=0;
         command.y=intensity;
-        command.heading=heading + 0.2;
+        command.heading=heading + headingModulation;
         command.z = desired_buoy_depth;//buoy.world_coord(2)+z;	//depth
     }
     return command;
