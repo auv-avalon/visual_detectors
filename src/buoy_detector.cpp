@@ -115,6 +115,14 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 		int y = cvRound(circles[i][1] / factor);
 		int r = cvRound(circles[i][2] / factor);
 
+                if(x < 2)
+                   x = 2;
+                if(x > frame->width - 2)
+                   x = frame->width - 2;
+                if(y < 2)
+                   y = 2;
+                if(y > frame->height - 2)
+                   y = frame->height - 2;
 		int counter = 0;
 		for (int j = x - 2; j <= x + 2; j++) {
 			for (int k = y - 2; k <= y + 2; k++) {
@@ -505,6 +513,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
 		cvReleaseImage(&s_shaded);
 		cvReleaseImage(&v_shaded);
 		cvReleaseImage(&or_plane);
+		cvReleaseImage(&copy);
 
 		return result;
 
@@ -573,6 +582,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	cvReleaseImage(&s_shaded);
 	cvReleaseImage(&v_shaded);
 	cvReleaseImage(&or_plane);
+	cvReleaseImage(&copy);
 
 	return result;
 }
