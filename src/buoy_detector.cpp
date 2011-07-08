@@ -106,7 +106,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 	std::vector < cv::Vec3f > circles;
 
     	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil->width / 4,
-			configEdgeThreshold, configHoughThreshold, 30, 150);
+			configEdgeThreshold, configHoughThreshold, 12, 150);
 
 	cvReleaseImage(&dil);
 //	bool wasFound=false;
