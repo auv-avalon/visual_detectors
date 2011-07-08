@@ -14,6 +14,11 @@ CommandCreator::CommandCreator(double d) : good_dist(d)
 
 }
 
+void CommandCreator::setGoodDist(double d)
+{
+    good_dist=d;
+}
+
 
 base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth)
 {
@@ -23,7 +28,7 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
             heading = atan(buoy.world_coord(1) / buoy.world_coord(0));
             heading*=1;
         }
-        double z = rbs.position[2];
+        //double z = rbs.position[2];
         base::AUVPositionCommand command;
         command.heading =heading;
         command.x = (buoy.world_coord(0) - good_dist)*0.2;  //distance
@@ -40,7 +45,7 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
 base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double intensity, double desired_buoy_depth)
 {
     base::AUVPositionCommand command;
-    double z = rbs.position[2];
+    //double z = rbs.position[2];
     double heading = 0;
     if(buoy.world_coord(0)!=0)
     {
@@ -61,5 +66,47 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
         command.heading=heading;
         command.z = desired_buoy_depth;//buoy.world_coord(2)+z;	//depth
     }
+    return command;
+}
+
+base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState rbs, double desired_buoy_depth)
+{
+    //double z = rbs.position[2]+0.4;
+    base::AUVPositionCommand command;
+    command.heading =0;
+    command.x = 0.5;  //distance
+	// cap the maximum x speed
+    command.y =0; // no strafing
+    command.z = desired_buoy_depth+0.4;//buoy.world_coord(2)+z;	//depth
+    return command;
+}
+
+
+base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth)
+{
+    double heading = 0;
+    if(buoy.world_coord(0)!=0)
+    {
+        heading = atan(buoy.world_coord(1) / buoy.world_coord(0));
+        heading*=1;
+    }
+    //double z = rbs.position[2]+0.4;
+    base::AUVPositionCommand command;
+    command.heading =heading;
+    command.x = 0.5;  //distance
+	// cap the maximum x speed
+    command.y =0; // no strafing
+    command.z = desired_buoy_depth+0.4;//buoy.world_coord(2)+z;	//depth
+    return command;
+}
+
+base::AUVPositionCommand avalon::CommandCreator::giveInverse(base::AUVPositionCommand c)
+{
+    base::AUVPositionCommand command = c;
+    command.heading=-command.heading;
+    command.x=-command.x;
+    command.y=-command.y;
+    command.z=-command.z;
+    
     return command;
 }
