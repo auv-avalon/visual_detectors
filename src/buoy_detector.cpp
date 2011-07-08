@@ -22,7 +22,6 @@ HSVColorBuoyDetector::HSVColorBuoyDetector() :
 HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 }
 
-
 // ---------------------------------------------------------------------------------------
 
 void HSVColorBuoyDetector::configureLowHue(int low) {
@@ -34,7 +33,6 @@ void HSVColorBuoyDetector::configureHighHue(int high) {
 	if (0 <= high && high <= 255)
 		configHighHue = high;
 }
-
 
 std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 		double factor) {
@@ -131,79 +129,68 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 			}
 		}
 
+		if (counter / 24.0 > 0.8) {
 
-		if (counter/24.0 >0.8) {
+			feature::Buoy data(x, y, r);
 
-
-				feature::Buoy data(x, y, r);
-
-				result.push_back(data);
-				wasFound=true;
-				//if(testmode) std::cout << "Buoy Found" <<std::endl;
+			result.push_back(data);
+//			wasFound = true;
+			//if(testmode) std::cout << "Buoy Found" <<std::endl;
 
 		}
 
-
 	}
-//	if(wasFound){
-//		found++;
-//	}
-//	else
-//	{
-//		notFound++;
-//	}
+	//	if(wasFound){
+	//		found++;
+	//	}
+	//	else
+	//	{
+	//		notFound++;
+	//	}
 
-//	std::cout << "Found: " << found <<std::endl;
-//	std::cout << "Not found: " << notFound <<std::endl;
+	//	std::cout << "Found: " << found <<std::endl;
+	//	std::cout << "Not found: " << notFound <<std::endl;
 
 	return result;
 }
 
-
-
-
 void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
-
 
 	int height = src->height;
 	int width = src->width;
 	int rowSize = src->widthStep;
 	char *pixelStart = src->imageData;
 
+	Eigen::MatrixXf a0R(height, width);
+	Eigen::MatrixXf a0G(height, width);
+	Eigen::MatrixXf a0B(height, width);
 
+	Eigen::MatrixXf a1R(height, width);
+	Eigen::MatrixXf a1G(height, width);
+	Eigen::MatrixXf a1B(height, width);
 
-	Eigen::MatrixXf a0R(height,width);
-	Eigen::MatrixXf a0G(height,width);
-	Eigen::MatrixXf a0B(height,width);
+	Eigen::MatrixXf slopeR(2, width);
+	Eigen::MatrixXf slopeG(2, width);
+	Eigen::MatrixXf slopeB(2, width);
 
-	Eigen::MatrixXf a1R(height,width);
-	Eigen::MatrixXf a1G(height,width);
-	Eigen::MatrixXf a1B(height,width);
+	Eigen::MatrixXf y0R(2, width);
+	Eigen::MatrixXf y0G(2, width);
+	Eigen::MatrixXf y0B(2, width);
 
-	Eigen::MatrixXf slopeR(2,width);
-	Eigen::MatrixXf slopeG(2,width);
-	Eigen::MatrixXf slopeB(2,width);
-
-	Eigen::MatrixXf y0R(2,width);
-	Eigen::MatrixXf y0G(2,width);
-	Eigen::MatrixXf y0B(2,width);
-
-
-	float  mean[3],
-			sum[3], sxy[3], sx2, mid, factor[3];
+	float mean[3], sum[3], sxy[3], sx2, mid, factor[3];
 	int a1[3][height][width], min[3], max[3];
 
 	// grab the rgb values
 
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
-			a0R(y,x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
-			a0G(y,x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
-			a0B(y,x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
+			a0R(y, x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
+			a0G(y, x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
+			a0B(y, x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
 
-//			a0[0][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
-//			a0[1][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
-//			a0[2][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
+			//			a0[0][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
+			//			a0[1][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
+			//			a0[2][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
 		}
 	}
 
@@ -214,12 +201,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 			sum[z] = 0;
 		}
 		for (int y = 0; y < height; y++) {
-//			for (int z = 0; z < 3; z++) {
-//				sum[z] += (int) a0[z][y][x];
-//			}
-			sum[0] += (int) a0R(y,x);
-			sum[1] += (int) a0G(y,x);
-			sum[2] += (int) a0B(y,x);
+			//			for (int z = 0; z < 3; z++) {
+			//				sum[z] += (int) a0[z][y][x];
+			//			}
+			sum[0] += (int) a0R(y, x);
+			sum[1] += (int) a0G(y, x);
+			sum[2] += (int) a0B(y, x);
 		}
 		for (int z = 0; z < 3; z++) {
 			mean[z] = sum[z] / height;
@@ -227,25 +214,25 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 		}
 		sx2 = 0;
 		for (int y = 0; y < height; y++) {
-//			for (int z = 0; z < 3; z++) {
-//				sxy[z] += (y - mid) * a0[z][y][x] - mean[z];
-//			}
-			sxy[0] += (y - mid) * a0R(y,x) - mean[0];
-			sxy[1] += (y - mid) * a0G(y,x) - mean[1];
-			sxy[2] += (y - mid) * a0B(y,x) - mean[2];
+			//			for (int z = 0; z < 3; z++) {
+			//				sxy[z] += (y - mid) * a0[z][y][x] - mean[z];
+			//			}
+			sxy[0] += (y - mid) * a0R(y, x) - mean[0];
+			sxy[1] += (y - mid) * a0G(y, x) - mean[1];
+			sxy[2] += (y - mid) * a0B(y, x) - mean[2];
 
 			sx2 += (y - mid) * (y - mid);
 		}
-//		for (int z = 0; z < 3; z++) {
-//			slope[z][1][x] = sxy[z] / sx2;
-//			y0[z][1][x] = mean[z] - slope[z][1][x] * mid;
-			slopeR(1,x)=sxy[0] / sx2;
-			slopeG(1,x)=sxy[1] / sx2;
-			slopeB(1,x)=sxy[2] / sx2;
-			y0R(1,x)= mean[0] - slopeR(1,x) * mid;
-			y0G(1,x)= mean[1] - slopeG(1,x) * mid;
-			y0B(1,x)= mean[2] - slopeB(1,x) * mid;
-//		}
+		//		for (int z = 0; z < 3; z++) {
+		//			slope[z][1][x] = sxy[z] / sx2;
+		//			y0[z][1][x] = mean[z] - slope[z][1][x] * mid;
+		slopeR(1, x) = sxy[0] / sx2;
+		slopeG(1, x) = sxy[1] / sx2;
+		slopeB(1, x) = sxy[2] / sx2;
+		y0R(1, x) = mean[0] - slopeR(1, x) * mid;
+		y0G(1, x) = mean[1] - slopeG(1, x) * mid;
+		y0B(1, x) = mean[2] - slopeB(1, x) * mid;
+		//		}
 	}
 
 	//regression 2: compute the regression line of any row
@@ -255,12 +242,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 			sum[z] = 0;
 		}
 		for (int x = 0; x < width; x++) {
-//			for (int z = 0; z < 3; z++) {
-//				sum[z] += slope[z][1][x] * y + y0[z][1][x];
-//			}
-			sum[0]+=slopeR(1,x)*y+y0R(1,x);
-			sum[1]+=slopeG(1,x)*y+y0G(1,x);
-			sum[2]+=slopeB(1,x)*y+y0B(1,x);
+			//			for (int z = 0; z < 3; z++) {
+			//				sum[z] += slope[z][1][x] * y + y0[z][1][x];
+			//			}
+			sum[0] += slopeR(1, x) * y + y0R(1, x);
+			sum[1] += slopeG(1, x) * y + y0G(1, x);
+			sum[2] += slopeB(1, x) * y + y0B(1, x);
 		}
 		for (int z = 0; z < 3; z++) {
 			mean[z] = sum[z] / width;
@@ -268,29 +255,26 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 		}
 		sx2 = 0;
 		for (int x = 0; x < width; x++) {
-//			for (int z = 0; z < 3; z++) {
-//				sxy[z] += (x - mid) * (slope[z][1][x] * y + y0[z][1][x]
-//						- mean[z]);
-//			}
-			sxy[0] += (x - mid) * (slopeR(1,x) * y + y0R(1,x)
-									- mean[0]);
-			sxy[1] += (x - mid) * (slopeG(1,x) * y + y0G(1,x)
-									- mean[1]);
-			sxy[2] += (x - mid) * (slopeB(1,x) * y + y0B(1,x)
-									- mean[2]);
+			//			for (int z = 0; z < 3; z++) {
+			//				sxy[z] += (x - mid) * (slope[z][1][x] * y + y0[z][1][x]
+			//						- mean[z]);
+			//			}
+			sxy[0] += (x - mid) * (slopeR(1, x) * y + y0R(1, x) - mean[0]);
+			sxy[1] += (x - mid) * (slopeG(1, x) * y + y0G(1, x) - mean[1]);
+			sxy[2] += (x - mid) * (slopeB(1, x) * y + y0B(1, x) - mean[2]);
 			sx2 += (x - mid) * (x - mid);
 		}
-//		for (int z = 0; z < 3; z++) {
-//			slope[z][0][y] = sxy[z] / sx2;
-//			y0[z][0][y] = mean[z] - slope[z][0][y] * mid;
-//		}
-		slopeR(0,y)=sxy[0] / sx2;
-		slopeG(0,y)=sxy[1] / sx2;
-		slopeB(0,y)=sxy[2] / sx2;
+		//		for (int z = 0; z < 3; z++) {
+		//			slope[z][0][y] = sxy[z] / sx2;
+		//			y0[z][0][y] = mean[z] - slope[z][0][y] * mid;
+		//		}
+		slopeR(0, y) = sxy[0] / sx2;
+		slopeG(0, y) = sxy[1] / sx2;
+		slopeB(0, y) = sxy[2] / sx2;
 
-		y0R(0,y)=mean[0] - slopeR(0,y) * mid;
-		y0G(0,y)=mean[1] - slopeG(0,y) * mid;
-		y0B(0,y)=mean[2] - slopeB(0,y) * mid;
+		y0R(0, y) = mean[0] - slopeR(0, y) * mid;
+		y0G(0, y) = mean[1] - slopeG(0, y) * mid;
+		y0B(0, y) = mean[2] - slopeB(0, y) * mid;
 	}
 
 	//shading correction: subtract the flat background image from the
@@ -301,23 +285,23 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	}
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-//			for (int z = 0; z < 3; z++) {
-//				a1[z][y][x] = (int) (a0[z][y][x] - (slope[z][0][y] * x
-//						+ y0[z][0][y]));
-//				min[z] = (a1[z][y][x] < min[z]) ? a1[z][y][x] : min[z];
-//				max[z] = (a1[z][y][x] > max[z]) ? a1[z][y][x] : max[z];
-//			}
-			a1R(y,x) = (int) (a0R(y,x) - (slopeR(0,y) * x+ y0R(0,y)));
-			a1G(y,x) = (int) (a0G(y,x) - (slopeG(0,y) * x+ y0G(0,y)));
-			a1B(y,x) = (int) (a0B(y,x) - (slopeB(0,y) * x+ y0B(0,y)));
+			//			for (int z = 0; z < 3; z++) {
+			//				a1[z][y][x] = (int) (a0[z][y][x] - (slope[z][0][y] * x
+			//						+ y0[z][0][y]));
+			//				min[z] = (a1[z][y][x] < min[z]) ? a1[z][y][x] : min[z];
+			//				max[z] = (a1[z][y][x] > max[z]) ? a1[z][y][x] : max[z];
+			//			}
+			a1R(y, x) = (int) (a0R(y, x) - (slopeR(0, y) * x + y0R(0, y)));
+			a1G(y, x) = (int) (a0G(y, x) - (slopeG(0, y) * x + y0G(0, y)));
+			a1B(y, x) = (int) (a0B(y, x) - (slopeB(0, y) * x + y0B(0, y)));
 
-			min[0] = (a1R(y,x) < min[0]) ? a1R(y,x) : min[0];
-			min[1] = (a1G(y,x) < min[1]) ? a1G(y,x) : min[1];
-			min[2] = (a1B(y,x) < min[2]) ? a1B(y,x) : min[2];
+			min[0] = (a1R(y, x) < min[0]) ? a1R(y, x) : min[0];
+			min[1] = (a1G(y, x) < min[1]) ? a1G(y, x) : min[1];
+			min[2] = (a1B(y, x) < min[2]) ? a1B(y, x) : min[2];
 
-			max[0] = (a1R(y,x) > max[0]) ? a1R(y,x) : max[0];
-			max[1] = (a1G(y,x) > max[1]) ? a1G(y,x) : max[1];
-			max[2] = (a1B(y,x) > max[2]) ? a1B(y,x) : max[2];
+			max[0] = (a1R(y, x) > max[0]) ? a1R(y, x) : max[0];
+			max[1] = (a1G(y, x) > max[1]) ? a1G(y, x) : max[1];
+			max[2] = (a1B(y, x) > max[2]) ? a1B(y, x) : max[2];
 		}
 	}
 	for (int z = 0; z < 3; z++) {
@@ -325,12 +309,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	}
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
-//			for (int z = 0; z < 3; z++) {
-//				a0[z][y][x] = (int) ((a1[z][y][x] - min[z]) * factor[z]);
-//			}
-			a0R(y,x) =(int) ( (a1R(y,x)-min[0])*factor[0]);
-			a0G(y,x) =(int) ( (a1G(y,x)-min[1])*factor[1]);
-			a0B(y,x) =(int) ( (a1B(y,x)-min[2])*factor[2]);
+			//			for (int z = 0; z < 3; z++) {
+			//				a0[z][y][x] = (int) ((a1[z][y][x] - min[z]) * factor[z]);
+			//			}
+			a0R(y, x) = (int) ((a1R(y, x) - min[0]) * factor[0]);
+			a0G(y, x) = (int) ((a1G(y, x) - min[1]) * factor[1]);
+			a0B(y, x) = (int) ((a1B(y, x) - min[2]) * factor[2]);
 		}
 	}
 	rowSize = dest->widthStep;
@@ -338,13 +322,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
 
-			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0) = a0R(y,x);
-			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1) = a0G(y,x);
-			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2) = a0B(y,x);
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0) = a0R(y, x);
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1) = a0G(y, x);
+			*(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2) = a0B(y, x);
 		}
 	}
 }
-
 
 int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 		int th1, int th2, int steps, bool negativColor1, bool negativColor2,
@@ -417,9 +400,9 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 
 		} else {
 
-			if (counter2 + counter3 <= ((height) * width)
-					/ (double) 10 && (past == 0 || (past * 250) / (double) 100
-					> counter2 + counter3)) {
+			if (counter2 + counter3 <= ((height) * width) / (double) 10
+					&& (past == 0 || (past * 250) / (double) 100 > counter2
+							+ counter3)) {
 				if ((counter2 / counter1) < 0.25 && (th2 + steps) <= 255) {
 					return merge(dest, src1, scr2, th1, (th2 + steps), steps,
 							negativColor1, negativColor2, true, past, testMode);
@@ -435,77 +418,73 @@ int HSVColorBuoyDetector::merge(IplImage* dest, IplImage* src1, IplImage* scr2,
 	}
 	if (testMode) {
 		IplImage* v_plane = cvCreateImage(cvGetSize(scr2), 8, 1);
-		cvThreshold(scr2,v_plane,  th2, 255, CV_THRESH_BINARY);
+		cvThreshold(scr2, v_plane, th2, 255, CV_THRESH_BINARY);
 		cvShowImage("V binary", v_plane);
 		cvShowImage("V", scr2);
 	}
 	return counter2 + counter3;
 }
 
-
 std::vector<feature::Buoy> HSVColorBuoyDetector::detectBuoy(IplImage* img,
-		int height, int h_threshold,int s_threshold, int v_threshold, int steps,
-		int pastAverageDark, bool testMode) {
+		int height, int h_threshold, int s_threshold, int v_threshold,
+		int steps, int pastAverageDark, bool testMode) {
 
-		IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
-		cvCopy(img, copy);
-		double factor = 1;//height / (double) (img->height); // The resize factor
+	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
+	cvCopy(img, copy);
+	double factor = 1;//height / (double) (img->height); // The resize factor
 
-		//Split Image to single HSV planes
-		cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
-		IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
+	//Split Image to single HSV planes
+	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
+	IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
 
-		//Shading correction
-		cvCvtColor(copy, copy, CV_HSV2RGB);
-		shadingRGB(copy, copy);
+	//Shading correction
+	cvCvtColor(copy, copy, CV_HSV2RGB);
+	shadingRGB(copy, copy);
 
-		//Split shaded images to single HSV planes
-		cvCvtColor(copy, copy, CV_RGB2HSV);
-		IplImage* h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* s_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-		IplImage* v_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-		cvCvtPixToPlane(copy, h_shaded, s_shaded, v_shaded, 0);
+	//Split shaded images to single HSV planes
+	cvCvtColor(copy, copy, CV_RGB2HSV);
+	IplImage* h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* s_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* v_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
+	cvCvtPixToPlane(copy, h_shaded, s_shaded, v_shaded, 0);
 
-		//Get the buoy
-		IplImage* or_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-		merge(or_plane, h_plane,v_shaded, h_threshold, v_threshold, steps, false,
-				true, true, pastAverageDark, testMode);
+	//Get the buoy
+	IplImage* or_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	merge(or_plane, h_plane, v_shaded, h_threshold, v_threshold, steps, false,
+			true, true, pastAverageDark, testMode);
 
+	//detect buoys
+	std::vector < feature::Buoy > result = detect(or_plane, factor);
 
+	//get binary images
+	cvThreshold(h_plane, h_plane, h_threshold, 255, CV_THRESH_BINARY);
+	cvThreshold(s_plane, s_plane, s_threshold, 255, CV_THRESH_BINARY);
 
-		//detect buoys
-		std::vector < feature::Buoy > result = detect(or_plane, factor);
+	cvThreshold(h_shaded, h_shaded, h_threshold, 255, CV_THRESH_BINARY);
+	cvThreshold(s_shaded, s_shaded, s_threshold, 255, CV_THRESH_BINARY);
 
-		//get binary images
-		cvThreshold(h_plane, h_plane, h_threshold, 255, CV_THRESH_BINARY);
-		cvThreshold(s_plane, s_plane, s_threshold, 255, CV_THRESH_BINARY);
-
-
-		cvThreshold(h_shaded, h_shaded, h_threshold, 255, CV_THRESH_BINARY);
-		cvThreshold(s_shaded, s_shaded, s_threshold, 255, CV_THRESH_BINARY);
-
-		//Show images
-		if(testMode){
+	//Show images
+	if (testMode) {
 		cvShowImage("H binary (shaded)", h_shaded);
 		cvShowImage("S binary (shaded)", s_shaded);
 		cvShowImage("H binary", h_plane);
 		cvShowImage("S binary", s_plane);
 		cvShowImage("Result", or_plane);
-		}
+	}
 
-		//Release images
-		cvReleaseImage(&h_plane);
-		cvReleaseImage(&s_plane);
-		cvReleaseImage(&v_plane);
-		cvReleaseImage(&h_shaded);
-		cvReleaseImage(&s_shaded);
-		cvReleaseImage(&v_shaded);
-		cvReleaseImage(&or_plane);
+	//Release images
+	cvReleaseImage(&h_plane);
+	cvReleaseImage(&s_plane);
+	cvReleaseImage(&v_plane);
+	cvReleaseImage(&h_shaded);
+	cvReleaseImage(&s_shaded);
+	cvReleaseImage(&v_shaded);
+	cvReleaseImage(&or_plane);
 
-		return result;
+	return result;
 
 	//		return null;
 }
@@ -543,25 +522,27 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	//"OR" images
 	IplImage* or_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-//	cvOr(h_shaded, s_plane, or_plane);
+	//	cvOr(h_shaded, s_plane, or_plane);
+	cvRectangle(s_plane, cvPoint(0, 0), cvPoint(img->width, 3),
+			cvScalar(0, 0, 0), CV_FILLED);
 	cvCopy(s_plane, or_plane);
 	//smooth images
-	cvSmooth(or_plane, or_plane, CV_MEDIAN, 5, 5);
 
+	cvSmooth(or_plane, or_plane, CV_MEDIAN, 5, 5);
 
 	//detect buoys
 	std::vector < feature::Buoy > result = detect(or_plane, h_shaded, s_plane,
 			factor);
 
-//	cv::Mat out;
-//	cv::Canny(or_plane, out, (int) configEdgeThreshold / 4,
-//			(int) configEdgeThreshold, 3);
-//	cv::imshow("cannyOut", out);
+	//	cv::Mat out;
+	//	cv::Canny(or_plane, out, (int) configEdgeThreshold / 4,
+	//			(int) configEdgeThreshold, 3);
+	//	cv::imshow("cannyOut", out);
 
 	//Show images
-	if(testMode){
-	cvShowImage("H binary (shaded)", h_shaded);
-	cvShowImage("S binary", s_plane);
+	if (testMode) {
+		cvShowImage("H binary (shaded)", h_shaded);
+		cvShowImage("S binary", s_plane);
 	}
 
 	//Release images
