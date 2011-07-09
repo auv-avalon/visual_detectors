@@ -77,7 +77,7 @@ base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState r
 {
     base::AUVPositionCommand command;
     command.heading =0;
-    command.x = 0.8;  //distance
+    command.x = 0.4;  //distance
 	// cap the maximum x speed
     command.y =0; // no strafing
     command.z = desired_buoy_depth+h;//depth
@@ -95,7 +95,7 @@ base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samp
     }
     base::AUVPositionCommand command;
     command.heading =heading;
-    command.x = 0.8;  //distance
+    command.x = 0.4;  //distance
 	// cap the maximum x speed
     command.y =0; // no strafing
     command.z = desired_buoy_depth+h;	//depth
