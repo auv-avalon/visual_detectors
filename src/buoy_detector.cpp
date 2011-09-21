@@ -80,9 +80,11 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 	//	// Vector for all buoys
 	std::vector < feature::Buoy > result;
 
-	IplImage* dil = cvCreateImage(cvGetSize(frame), 8, 1);
+        cv::Mat dil;
 
-	cvDilate(frame, dil, NULL, 2);
+	//IplImage* dil = cvCreateImage(cvGetSize(frame), 8, 1);
+
+	// cvDilate(frame, dil, NULL, 2);
 	//	cvCopy(frame, dil);
 	//
 	//	int cannyVal = 250;
@@ -98,14 +100,14 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
 	 cv::GaussianBlur( out, out, cv::Size(gaussVal * 2 - 1, gaussVal * 2 - 1), 2, 2 );
 	 */
 
-	cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
+	//cvSmooth(dil, dil, CV_GAUSSIAN, 21, 21);
 
 	std::vector < cv::Vec3f > circles;
 
-	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil->width / 4,
+	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil.cols / 4,
 			configEdgeThreshold, configHoughThreshold, 10, 150);
 
-	cvReleaseImage(&dil);
+	//cvReleaseImage(&dil);
 	//	bool wasFound=false;
 	for (int i = 0; i < circles.size(); i++) {
 		int x = cvRound(circles[i][0] / factor);
