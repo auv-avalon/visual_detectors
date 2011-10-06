@@ -41,8 +41,6 @@ class HSVColorBuoyDetector : public BuoyDetector {
       */
      ~HSVColorBuoyDetector();
 
-     //BuoyFeatureVector detect(IplImage* image, double factor);
-
      /**
       * configure the min hue value for buoy extracting in hsv space
       * @param low lower hue value for filterByHue
@@ -80,12 +78,6 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * @param 
       * @return 
       */
-
-     int merge(IplImage* dest, IplImage* src1, IplImage* scr2,
-		int th1, int th2, int steps, bool negativColor1, bool negativColor2,
-		bool rekursion, int past, bool testMode);
-
-     BuoyFeatureVector detect(IplImage* image, double factor);
      BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane, IplImage* s_plane, double factor);
 
      BuoyFeatureVector detectBuoy(IplImage* img,
