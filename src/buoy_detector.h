@@ -73,18 +73,12 @@ class HSVColorBuoyDetector : public BuoyDetector {
      void shadingRGB(IplImage* src, IplImage* dest);
      // TODO: more configuration methods if necessary
 
-      /**
-      * Creates a histogram image for a specific gray image
-      * @param 
-      * @return 
-      */
-     BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane, IplImage* s_plane, double factor);
 
-     BuoyFeatureVector detectBuoy(IplImage* img,
-		int height, int h_threshold,int s_threshold, int v_threshold, int steps,
-		int pastAverageDark, bool testMode);
+     BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane);
+
+
     
-     BuoyFeatureVector buoyDetection(IplImage* img,int height, double h_threshold, double s_threshold, bool testMode);
+     BuoyFeatureVector buoyDetection(IplImage* img, double h_threshold, double s_threshold, bool testMode);
 
 
  private:

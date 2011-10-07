@@ -15,7 +15,7 @@ const CvScalar circleColor = cvScalar(0, 255, 0);
 // ---------------------------------------------------------------------------------------
 
 HSVColorBuoyDetector::HSVColorBuoyDetector() :
-	satMax(0), valMax(0), configLowHue(56), configHighHue(200),
+	satMax(0), valMax(0), 
 			configHoughThreshold(100), configEdgeThreshold(200) {
 }
 
@@ -23,19 +23,6 @@ HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 }
 
 // ---------------------------------------------------------------------------------------
-
-void HSVColorBuoyDetector::configureLowHue(int low) {
-	if (0 <= low && low <= 255)
-		configLowHue = low;
-}
-
-void HSVColorBuoyDetector::configureHighHue(int high) {
-	if (0 <= high && high <= 255)
-		configHighHue = high;
-}
-
-
-
 
 
 
@@ -63,7 +50,7 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	Eigen::MatrixXf y0B(2, width);
 
 	float mean[3], sum[3], sxy[3], sx2, mid, factor[3];
-	int a1[3][height][width], min[3], max[3];
+	int  min[3], max[3];
 
 	// grab the rgb values
 
@@ -72,10 +59,6 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 			a0R(y, x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
 			a0G(y, x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
 			a0B(y, x) = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
-
-			//			a0[0][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 0);
-			//			a0[1][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 1);
-			//			a0[2][y][x] = *(uchar *) (pixelStart + (y) * rowSize + (x) * 3 + 2);
 		}
 	}
 
@@ -86,9 +69,6 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 			sum[z] = 0;
 		}
 		for (int y = 0; y < height; y++) {
-			//			for (int z = 0; z < 3; z++) {
-			//				sum[z] += (int) a0[z][y][x];
-			//			}
 			sum[0] += (int) a0R(y, x);
 			sum[1] += (int) a0G(y, x);
 			sum[2] += (int) a0B(y, x);
@@ -99,25 +79,19 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 		}
 		sx2 = 0;
 		for (int y = 0; y < height; y++) {
-			//			for (int z = 0; z < 3; z++) {
-			//				sxy[z] += (y - mid) * a0[z][y][x] - mean[z];
-			//			}
 			sxy[0] += (y - mid) * a0R(y, x) - mean[0];
 			sxy[1] += (y - mid) * a0G(y, x) - mean[1];
 			sxy[2] += (y - mid) * a0B(y, x) - mean[2];
 
 			sx2 += (y - mid) * (y - mid);
 		}
-		//		for (int z = 0; z < 3; z++) {
-		//			slope[z][1][x] = sxy[z] / sx2;
-		//			y0[z][1][x] = mean[z] - slope[z][1][x] * mid;
+
 		slopeR(1, x) = sxy[0] / sx2;
 		slopeG(1, x) = sxy[1] / sx2;
 		slopeB(1, x) = sxy[2] / sx2;
 		y0R(1, x) = mean[0] - slopeR(1, x) * mid;
 		y0G(1, x) = mean[1] - slopeG(1, x) * mid;
 		y0B(1, x) = mean[2] - slopeB(1, x) * mid;
-		//		}
 	}
 
 	//regression 2: compute the regression line of any row
@@ -127,9 +101,6 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 			sum[z] = 0;
 		}
 		for (int x = 0; x < width; x++) {
-			//			for (int z = 0; z < 3; z++) {
-			//				sum[z] += slope[z][1][x] * y + y0[z][1][x];
-			//			}
 			sum[0] += slopeR(1, x) * y + y0R(1, x);
 			sum[1] += slopeG(1, x) * y + y0G(1, x);
 			sum[2] += slopeB(1, x) * y + y0B(1, x);
@@ -140,19 +111,11 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 		}
 		sx2 = 0;
 		for (int x = 0; x < width; x++) {
-			//			for (int z = 0; z < 3; z++) {
-			//				sxy[z] += (x - mid) * (slope[z][1][x] * y + y0[z][1][x]
-			//						- mean[z]);
-			//			}
 			sxy[0] += (x - mid) * (slopeR(1, x) * y + y0R(1, x) - mean[0]);
 			sxy[1] += (x - mid) * (slopeG(1, x) * y + y0G(1, x) - mean[1]);
 			sxy[2] += (x - mid) * (slopeB(1, x) * y + y0B(1, x) - mean[2]);
 			sx2 += (x - mid) * (x - mid);
 		}
-		//		for (int z = 0; z < 3; z++) {
-		//			slope[z][0][y] = sxy[z] / sx2;
-		//			y0[z][0][y] = mean[z] - slope[z][0][y] * mid;
-		//		}
 		slopeR(0, y) = sxy[0] / sx2;
 		slopeG(0, y) = sxy[1] / sx2;
 		slopeB(0, y) = sxy[2] / sx2;
@@ -170,12 +133,6 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	}
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			//			for (int z = 0; z < 3; z++) {
-			//				a1[z][y][x] = (int) (a0[z][y][x] - (slope[z][0][y] * x
-			//						+ y0[z][0][y]));
-			//				min[z] = (a1[z][y][x] < min[z]) ? a1[z][y][x] : min[z];
-			//				max[z] = (a1[z][y][x] > max[z]) ? a1[z][y][x] : max[z];
-			//			}
 			a1R(y, x) = (int) (a0R(y, x) - (slopeR(0, y) * x + y0R(0, y)));
 			a1G(y, x) = (int) (a0G(y, x) - (slopeG(0, y) * x + y0G(0, y)));
 			a1B(y, x) = (int) (a0B(y, x) - (slopeB(0, y) * x + y0B(0, y)));
@@ -194,9 +151,6 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 	}
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
-			//			for (int z = 0; z < 3; z++) {
-			//				a0[z][y][x] = (int) ((a1[z][y][x] - min[z]) * factor[z]);
-			//			}
 			a0R(y, x) = (int) ((a1R(y, x) - min[0]) * factor[0]);
 			a0G(y, x) = (int) ((a1G(y, x) - min[1]) * factor[1]);
 			a0B(y, x) = (int) ((a1B(y, x) - min[2]) * factor[2]);
@@ -216,16 +170,12 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 
 
 
-
-
 ////////SAUC-E/////////////
 std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
-		int height, double h_threshold, double s_threshold, bool testMode) {
+		 double h_threshold, double s_threshold, bool testMode) {
 
 	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
-	//	IplImage* copy = getCopy(img, height);// Resize the image to a specific height
-	double factor = 1;//height / (double) (img->height); // The resize factor
 
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
@@ -246,26 +196,25 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	cvCvtPixToPlane(copy, h_shaded, s_shaded, v_shaded, 0);
 
 	//create binary images
+	cvThreshold(h_plane, h_plane, h_threshold, 255, CV_THRESH_BINARY);
 	cvThreshold(h_shaded, h_shaded, h_threshold, 255, CV_THRESH_BINARY);
 	cvThreshold(s_plane, s_plane, s_threshold, 255, CV_THRESH_BINARY);
 
-	//"OR" images
-	IplImage* or_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-	//	cvOr(h_shaded, s_plane, or_plane);
+	//
 	cvRectangle(s_plane, cvPoint(0, 0), cvPoint(img->width, 3),
 			cvScalar(0, 0, 0), CV_FILLED);
-	cvCopy(s_plane, or_plane);
-	//smooth images
 
-	cvSmooth(or_plane, or_plane, CV_MEDIAN, 5, 5);
+	//smooth images
+	cvSmooth(s_plane, s_plane, CV_MEDIAN, 5, 5);
 
 	//detect buoys
 	std::vector < feature::Buoy > result ;
-	result = detect(or_plane, h_shaded, s_plane,factor);
+	result = detect(s_plane, h_shaded);
 
 
 	//Show images
 	if (testMode) {
+		cvShowImage("H binary", h_plane);
 		cvShowImage("H binary (shaded)", h_shaded);
 		cvShowImage("S binary", s_plane);
 	}
@@ -277,37 +226,36 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	cvReleaseImage(&h_shaded);
 	cvReleaseImage(&s_shaded);
 	cvReleaseImage(&v_shaded);
-	cvReleaseImage(&or_plane);
 	cvReleaseImage(&copy);
 
 	return result;
 }
 
-std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* frame,
-		IplImage* h_plane, IplImage* s_plane, double factor) {
+std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
+		IplImage* h_plane) {
 
 	std::vector < feature::Buoy > result;
 
         cv::Mat dil;
-	dil = cv::Mat(frame,true); 
+	dil = cv::Mat(s_plane,true); 
 
 	std::vector < cv::Vec3f > circles;
 
 	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil.cols / 4, configEdgeThreshold, configHoughThreshold, 10, 150);
 
 	for (int i = 0; i < circles.size(); i++) {
-		int x = cvRound(circles[i][0] / factor);
-		int y = cvRound(circles[i][1] / factor);
-		int r = cvRound(circles[i][2] / factor);
+		int x = cvRound(circles[i][0]);
+		int y = cvRound(circles[i][1]);
+		int r = cvRound(circles[i][2]);
 
                 if(x < 2)
                    x = 2;
-                if(x > frame->width - 2)
-                   x = frame->width - 2;
+                if(x > s_plane->width - 2)
+                   x = s_plane->width - 2;
                 if(y < 2)
                    y = 2;
-                if(y > frame->height - 2)
-                   y = frame->height - 2;
+                if(y > s_plane->height - 2)
+                   y = s_plane->height - 2;
 		int counter = 0;
 		for (int j = x - 2; j <= x + 2; j++) {
 			for (int k = y - 2; k <= y + 2; k++) {
