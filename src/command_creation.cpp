@@ -40,7 +40,10 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
 	if(command.x < -maxX)
 	    command.x = -maxX;
         command.y = 0; // no strafing
-        command.z = desired_buoy_depth+z;	//depth
+        base::Pose p = rbs.getPose();
+    	command.z = p.position[2]+z;	//depth
+    	if(command.z > desired_buoy_depth+0.3) command.z = desired_buoy_depth+0.3;
+    	if(command.z < desired_buoy_depth-0.3) command.z = desired_buoy_depth-0.3;
     return command;
 }
 
@@ -62,13 +65,19 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
         command.x=0;
         command.y=intensity;
         command.heading=heading - headingModulation;
-        command.z = desired_buoy_depth+z;	//depth
+        base::Pose p = rbs.getPose();
+    	command.z = p.position[2]+z;	//depth
+    	if(command.z > desired_buoy_depth+0.3) command.z = desired_buoy_depth+0.3;
+    	if(command.z < desired_buoy_depth-0.3) command.z = desired_buoy_depth-0.3;
     }else{            //strafe nach rechts
 //        if(heading<0) heading=0;  //hier nicht nach rechts drehen
         command.x=0;
         command.y=intensity;
         command.heading=heading + headingModulation;
-        command.z = desired_buoy_depth+z;	//depth
+    	base::Pose p = rbs.getPose();
+    	command.z = p.position[2]+z;	//depth
+    	if(command.z > desired_buoy_depth+0.3) command.z = desired_buoy_depth+0.3;
+    	if(command.z < desired_buoy_depth-0.3) command.z = desired_buoy_depth-0.3;
     }
     return command;
 }
@@ -80,7 +89,9 @@ base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState r
     command.x = 0.4;  //distance
 	// cap the maximum x speed
     command.y =0; // no strafing
-    command.z = desired_buoy_depth+h;//depth
+//    command.z = desired_buoy_depth+h;//depth
+    base::Pose p = rbs.getPose();
+    command.z = p.position[2]+h;	//depth
     return command;
 }
 
@@ -98,7 +109,8 @@ base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samp
     command.x = 0.4;  //distance
 	// cap the maximum x speed
     command.y =0; // no strafing
-    command.z = desired_buoy_depth+h;	//depth
+    base::Pose p = rbs.getPose();
+    command.z = p.position[2]+h;	//depth
     return command;
 }
 

@@ -29,15 +29,6 @@ namespace avalon{
             static const float fx=815;		//TODO: Echte Werte heraus finden
             static const float fy=765;
 
-		//woher kriege ich fx und fy???
-		//woher hat alex die pixel-breite auf dem die
-	        //wo kriege ich breite und höhe des Bildes her?
-
-        //    static const float imgWidth=1024;
-        //    static const float imgHeight=640;
-
-           
-
             //helps estimateAuvKoordinates. calculates the position of the buoy
             //relativ to the camera of the AUV
             //parameters:

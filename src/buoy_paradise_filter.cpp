@@ -154,7 +154,7 @@ feature::Buoy BuoyParadiseFilter::radius_filter(BuoyFeatureVector& buoys)
             double x=0;
             for(unsigned int i=0;i<2;i++)
 	    {
-	        x+=buoys[buoys.size()-(i+1)].image_radius*f4[i];
+	        x+=buoys[buoys.size()-(i+1)].image_radius*f2[i];
 	    }  
 	    buoy.image_radius=x;
 	}

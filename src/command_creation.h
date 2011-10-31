@@ -3,6 +3,7 @@
 #include <base/motion_command.h>
 #include <base/samples/rigid_body_state.h>
 #include "buoy_interface.h"
+#include <base/pose.h>
 
 
 namespace avalon{

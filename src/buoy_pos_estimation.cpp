@@ -17,12 +17,12 @@ namespace avalon{
     {
 	//check if the Frame has fx and fy and set them if not
 	if(!frame.hasAttribute("fx"))
-		frame.setAttribute<long>("fx",fx);
+		frame.setAttribute<long>("fx",fx);	//möglicherweise sind fx und fy falsch???
 	if(!frame.hasAttribute("fy"))
 		frame.setAttribute<long>("fy",fy);
 	
         //calculate the distance to buoy (x-koordinate)
-        buoy.world_coord[0]=fh.calcDistanceToObject(frame,buoy.image_radius,buoyRadius,buoy.image_radius,buoyRadius);
+        buoy.world_coord[0]=fh.calcDistanceToObject(frame,buoy.image_radius*2,buoyRadius,buoy.image_radius*2,buoyRadius);//wenn fx u fy an gepasst, hier auch den radius*2
 	//calculate the y and z koordinate
         cv::Point2f point2d=fh.calcRelPosToCenter(frame, buoy.image_x,buoy.image_y, buoy.world_coord[0]);
         buoy.world_coord[1]=point2d.x;
@@ -46,7 +46,7 @@ namespace avalon{
         estimateCWKoordinates(buoy,fh,frame);
         //transfer the koordinates relative to the AUV
         //TODO:...
-
+	
         return buoy.world_coord;
     }
     
