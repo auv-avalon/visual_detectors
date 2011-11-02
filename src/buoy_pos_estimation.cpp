@@ -22,7 +22,7 @@ namespace avalon{
 		frame.setAttribute<long>("fy",fy);
 	
         //calculate the distance to buoy (x-koordinate)
-        buoy.world_coord[0]=fh.calcDistanceToObject(frame,buoy.image_radius*2,buoyRadius,buoy.image_radius*2,buoyRadius);//wenn fx u fy an gepasst, hier auch den radius*2
+        buoy.world_coord[0]=fh.calcDistanceToObject(frame,buoy.image_radius,buoyRadius,buoy.image_radius,buoyRadius);//wenn fx u fy an gepasst, hier auch den radius*2
 	//calculate the y and z koordinate
         cv::Point2f point2d=fh.calcRelPosToCenter(frame, buoy.image_x,buoy.image_y, buoy.world_coord[0]);
         buoy.world_coord[1]=point2d.x;
