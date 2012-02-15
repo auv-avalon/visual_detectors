@@ -61,7 +61,6 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     }
 
     if(intensity>0){  //strafe nach links
-//        if(heading>0) heading=0;  //hier nicht nach links drehen
         command.x=0;
         command.y=intensity;
         command.heading=heading - headingModulation;
@@ -70,7 +69,6 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     	if(command.z > desired_buoy_depth+0.3) command.z = desired_buoy_depth+0.3;
     	if(command.z < desired_buoy_depth-0.3) command.z = desired_buoy_depth-0.3;
     }else{            //strafe nach rechts
-//        if(heading<0) heading=0;  //hier nicht nach rechts drehen
         command.x=0;
         command.y=intensity;
         command.heading=heading + headingModulation;
@@ -86,12 +84,11 @@ base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState r
 {
     base::AUVPositionCommand command;
     command.heading =0;
-    command.x = 0.4;  //distance
+    command.x = 0.8;  //distance
 	// cap the maximum x speed
     command.y =0; // no strafing
-//    command.z = desired_buoy_depth+h;//depth
-    base::Pose p = rbs.getPose();
-    command.z = p.position[2]+h;	//depth
+//    base::Pose p = rbs.getPose();
+    command.z = desired_buoy_depth+h;	//depth
     return command;
 }
 
@@ -110,7 +107,10 @@ base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samp
 	// cap the maximum x speed
     command.y =0; // no strafing
     base::Pose p = rbs.getPose();
+//Die Tiefe erhöht sich immer weiter. daher wäre es sinnvoll eine maximale tiefe desired_buoy_depth+h+0.3 fest zu legen
     command.z = p.position[2]+h;	//depth
+    if(command.z > desired_buoy_depth+0.3+h) command.z = desired_buoy_depth+0.3+h;
+    if(command.z < desired_buoy_depth-0.3+h) command.z = desired_buoy_depth-0.3+h;
     return command;
 }
 
