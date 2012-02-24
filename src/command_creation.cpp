@@ -89,6 +89,8 @@ base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState r
     command.y =0; // no strafing
 //    base::Pose p = rbs.getPose();
     command.z = desired_buoy_depth+h;	//depth
+    if(command.z > 0) command.z += 0.3;
+    if(command.z < 0) command.z -= 0.3;
     return command;
 }
 
