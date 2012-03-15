@@ -89,8 +89,7 @@ base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState r
     command.y =0; // no strafing
 //    base::Pose p = rbs.getPose();
     command.z = desired_buoy_depth+h;	//depth
-    if(command.z > 0) command.z += 0.3;
-    if(command.z < 0) command.z -= 0.3;
+    //command.z -= 0.3;
     return command;
 }
 
@@ -110,9 +109,9 @@ base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samp
     command.y =0; // no strafing
     base::Pose p = rbs.getPose();
 //Die Tiefe erhöht sich immer weiter. daher wäre es sinnvoll eine maximale tiefe desired_buoy_depth+h+0.3 fest zu legen
-    command.z = p.position[2]+h;	//depth
-    if(command.z > desired_buoy_depth+0.3+h) command.z = desired_buoy_depth+0.3+h;
-    if(command.z < desired_buoy_depth-0.3+h) command.z = desired_buoy_depth-0.3+h;
+    command.z = desired_buoy_depth+h;	//depth
+//    if(command.z > desired_buoy_depth+0.3+h) command.z = desired_buoy_depth+0.3+h;
+//    if(command.z < desired_buoy_depth-0.3+h) command.z = desired_buoy_depth-0.3+h;
     return command;
 }
 
