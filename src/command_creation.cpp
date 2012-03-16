@@ -79,7 +79,9 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     }
     return command;
 }
-
+/*
+ * cutten weiter führen ohne die boje noch zu sehen
+ */
 base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState rbs, double desired_buoy_depth, double h)
 {
     base::AUVPositionCommand command;
@@ -87,20 +89,25 @@ base::AUVPositionCommand CommandCreator::cutBuoy(base::samples::RigidBodyState r
     command.x = 0.8;  //distance
 	// cap the maximum x speed
     command.y =0; // no strafing
-//    base::Pose p = rbs.getPose();
-    command.z = desired_buoy_depth+h;	//depth
-    //command.z -= 0.3;
+    base::Pose p = rbs.getPose();
+    if(p.position[2]<=desired_buoy_depth+h){
+    	command.z = desired_buoy_depth+h;	//depth
+    }else{
+        command.z = p.position[2]+h;
+    }
+    //command.z -= 0.2;
     return command;
 }
 
-
+/*
+ * boje cutten solange sie noch gesehen wird
+ */
 base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth, double h)
 {
     double heading = 0;
     if(buoy.world_coord(0)!=0)
     {
         heading = atan(buoy.world_coord(1) / buoy.world_coord(0));
-        heading*=1;
     }
     base::AUVPositionCommand command;
     command.heading =heading;
@@ -109,7 +116,8 @@ base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samp
     command.y =0; // no strafing
     base::Pose p = rbs.getPose();
 //Die Tiefe erhöht sich immer weiter. daher wäre es sinnvoll eine maximale tiefe desired_buoy_depth+h+0.3 fest zu legen
-    command.z = desired_buoy_depth+h;	//depth
+    command.z = p.position[2]+h;
+//    command.z = desired_buoy_depth+h;	//depth
 //    if(command.z > desired_buoy_depth+0.3+h) command.z = desired_buoy_depth+0.3+h;
 //    if(command.z < desired_buoy_depth-0.3+h) command.z = desired_buoy_depth-0.3+h;
     return command;
