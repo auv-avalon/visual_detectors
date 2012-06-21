@@ -1,3 +1,6 @@
+#ifndef VISUAL_DETECTORS__COMMAND_CREATION_H_
+#define VISUAL_DETECTORS__COMMAND_CREATION_H_
+
 #include <math.h>
 #include <iostream>
 #include <base/motion_command.h>
@@ -32,3 +35,5 @@ class CommandCreator{
 };
 
 }
+
+#endif // VISUAL_DETECTORS__COMMAND_CREATION_H_
