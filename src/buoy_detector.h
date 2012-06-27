@@ -80,6 +80,13 @@ class HSVColorBuoyDetector : public BuoyDetector {
     
      BuoyFeatureVector buoyDetection(IplImage* img, double h_threshold, double s_threshold, bool testMode);
 
+	IplImage* getHshaded(); //wichtig
+	IplImage* Sshaded();
+	IplImage* Vshaded();
+	IplImage* Hplane();
+	IplImage* Splane();	//wichtig
+	IplImage* Vplane();
+
 
  private:
      int filterByHue(int H, int S, int V);

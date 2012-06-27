@@ -1,6 +1,5 @@
 #include "buoy_detector.h"
 #include <stdio.h>
-#include "opencv/highgui.h"
 #include <Eigen/Core>
 namespace avalon {
 
@@ -12,6 +11,14 @@ const unsigned char cCTSat[] = { 255, 0 };
 const unsigned char cCTVal[] = { 255, 0 };
 const CvScalar circleColor = cvScalar(0, 255, 0);
 
+//images for debug-output
+IplImage* h_shaded;
+IplImage* s_shaded;
+IplImage* v_shaded;
+IplImage* h_plane;
+IplImage* s_plane;
+IplImage* v_plane;
+
 // ---------------------------------------------------------------------------------------
 
 HSVColorBuoyDetector::HSVColorBuoyDetector() :
@@ -20,6 +27,13 @@ HSVColorBuoyDetector::HSVColorBuoyDetector() :
 }
 
 HSVColorBuoyDetector::~HSVColorBuoyDetector() {
+	//Release images
+	cvReleaseImage(&h_plane);
+	cvReleaseImage(&s_plane);
+	cvReleaseImage(&v_plane);
+	cvReleaseImage(&h_shaded);
+	cvReleaseImage(&s_shaded);
+	cvReleaseImage(&v_shaded);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -172,16 +186,16 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 
 ////////SAUC-E/////////////
 std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
-		 double h_threshold, double s_threshold, bool testMode) {
+	double h_threshold, double s_threshold, bool testMode) {
 
 	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
 
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
-	IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-	IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-	IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
 	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
 
 	//Shading correction
@@ -190,9 +204,9 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	//Split shaded images to single HSV planes
 	cvCvtColor(copy, copy, CV_RGB2HSV);
-	IplImage* h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-	IplImage* s_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-	IplImage* v_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
+	h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
+	s_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
+	v_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
 	cvCvtPixToPlane(copy, h_shaded, s_shaded, v_shaded, 0);
 
 	//create binary images
@@ -211,23 +225,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	std::vector < feature::Buoy > result ;
 	result = detect(s_plane, h_shaded);
 
-
-	//Show images
-	if (testMode) {
-		cvShowImage("H binary", h_plane);
-		cvShowImage("H binary (shaded)", h_shaded);
-		cvShowImage("S binary", s_plane);
-	}
-
-	//Release images
-	cvReleaseImage(&h_plane);
-	cvReleaseImage(&s_plane);
-	cvReleaseImage(&v_plane);
-	cvReleaseImage(&h_shaded);
-	cvReleaseImage(&s_shaded);
-	cvReleaseImage(&v_shaded);
 	cvReleaseImage(&copy);
-
 	return result;
 }
 
@@ -285,6 +283,27 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 
 	return result;
 }
+
+IplImage* HSVColorBuoyDetector::getHshaded(){
+	return h_shaded;		//wichtig
+}
+IplImage* HSVColorBuoyDetector::Sshaded(){
+	return s_shaded;
+}
+IplImage* HSVColorBuoyDetector::Vshaded(){
+	return v_shaded;
+}
+IplImage* HSVColorBuoyDetector::Hplane(){
+	return h_plane;
+}
+IplImage* HSVColorBuoyDetector::Splane(){
+	return s_plane;			//wichtig
+}
+IplImage* HSVColorBuoyDetector::Vplane(){
+	return v_plane;
+}
+
+
 /////////////////////
 } // namespace avalon
 

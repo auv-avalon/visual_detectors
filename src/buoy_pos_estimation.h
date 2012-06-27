@@ -5,7 +5,8 @@
  * created by: 
  *      Thomas Grassow <deshalb@informatik.uni-bremen.de>
  */
-
+#ifndef VISUAL_DETECTORS__POS_ESTIMATION_H_
+#define VISUAL_DETECTORS__POS_ESTIMATION_H_
 
 #include <base/samples/frame.h>
 #include <frame_helper/FrameHelperTypes.h>
@@ -52,3 +53,4 @@ namespace avalon{
 		
     };
 }
+#endif
