@@ -1,5 +1,5 @@
 #include "buoy_detector.h"
-#include <stdio.h>
+//#include <stdio.h>
 #include <Eigen/Core>
 namespace avalon {
 
