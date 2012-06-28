@@ -284,6 +284,85 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 	return result;
 }
 
+//White Light Detection
+
+bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, cv::Rect rect)
+{
+    bool result = false;
+    if(rect.y > 0 && rect.x > 0){
+    cvSetImageROI(img, rect);
+    result = GetWhiteLightState(img);
+    cvResetImageROI(img);
+    }
+    return result;
+}
+
+int HSVColorBuoyDetector::combineAndCount(IplImage *sat,IplImage *val, IplImage *dest )
+{
+
+	CvSize size=cvGetSize(sat);
+	uchar *dataSat  = (uchar *)sat->imageData;
+	uchar *dataVal  = (uchar *)val->imageData;
+	uchar *dataDest  = (uchar *)dest->imageData;
+	int step = sat->widthStep;
+
+    int counter =0;
+	for(int i=0;i< size.height;i++)
+	{
+		for(int j=0;j< size.width;j++)
+		{
+			uchar curSat = dataSat[i*step+j];
+			uchar curVal = dataVal[i*step+j];
+
+
+			if(curSat==0 &&curVal==255)
+			{
+				((uchar *)(dataDest+i*step))[j]=255;
+				counter++;
+			}
+			else
+			{
+				((uchar *)(dataDest+i*step))[j]=0;
+
+			}
+		}
+
+	}
+	return counter;
+}
+
+
+bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img){
+
+valBinary=254;
+satBinary=0;
+    IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
+	cvCopy(img, copy);
+
+	//Split Image to single HSV planes
+	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
+	IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	IplImage* dest = cvCreateImage(cvGetSize(copy), 8, 1);
+	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
+
+    cvThreshold(v_plane, v_plane, valBinary, 255, CV_THRESH_BINARY);
+    cvThreshold(s_plane, s_plane, satBinary, 255, CV_THRESH_BINARY);
+
+    int counter =CombineAndCount(s_plane,v_plane,dest);
+
+	cvReleaseImage(&h_plane);
+	cvReleaseImage(&s_plane);
+	cvReleaseImage(&v_plane);
+	cvReleaseImage(&dest);
+	cvReleaseImage(&copy);
+
+	return counter>10;
+}
+
+
+// Ports:
 IplImage* HSVColorBuoyDetector::getHshaded(){
 	return h_shaded;		//wichtig
 }

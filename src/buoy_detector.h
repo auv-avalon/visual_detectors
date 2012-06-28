@@ -64,10 +64,10 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * @param threshold value
       */
      void configureEdgeThreshold(int threshold) { configEdgeThreshold = threshold; }
-     
+
      /**
-     * compute two orthogonal linear regressions in order to convert 
-     * any arbitrary image into a flat background image without any 
+     * compute two orthogonal linear regressions in order to convert
+     * any arbitrary image into a flat background image without any
      * pictorial content.
      */
      void shadingRGB(IplImage* src, IplImage* dest);
@@ -77,8 +77,10 @@ class HSVColorBuoyDetector : public BuoyDetector {
      BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane);
 
 
-    
-     BuoyFeatureVector buoyDetection(IplImage* img, double h_threshold, double s_threshold, bool testMode);
+
+     BuoyFeatureVector buoyDetection(IplImage* img, double h_threshold, double s_threshold);
+
+    bool findWhiteLight(IplImage* img, cv::Rect rect);
 
 	IplImage* getHshaded(); //wichtig
 	IplImage* Sshaded();
@@ -91,6 +93,8 @@ class HSVColorBuoyDetector : public BuoyDetector {
  private:
      int filterByHue(int H, int S, int V);
      int filterBySaturation(int H, int S, int V);
+     int combineAndCount(IplImage *sat,IplImage *val, IplImage *dest );
+     bool getWhiteLightState(IplImage *img);
 
  private:
      int satMax;
