@@ -80,7 +80,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
 
      BuoyFeatureVector buoyDetection(IplImage* img, double h_threshold, double s_threshold);
 
-    bool findWhiteLight(IplImage* img, feature::Buoy buoy, double roi_X, double roi_Y, double roi_width, double roi_height);
+    bool findWhiteLight(IplImage* img, feature::Buoy buoy, feature::WhiteLightSettings settings);
 
 	IplImage* getHshaded(); //wichtig
 	IplImage* Sshaded();
@@ -94,7 +94,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
      int filterByHue(int H, int S, int V);
      int filterBySaturation(int H, int S, int V);
      int combineAndCount(IplImage *sat,IplImage *val, IplImage *dest );
-     bool getWhiteLightState(IplImage *img);
+     bool getWhiteLightState(IplImage *img, feature::WhiteLightSettings settings);
 
  private:
      int satMax;

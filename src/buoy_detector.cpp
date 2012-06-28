@@ -286,15 +286,20 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 
 //White Light Detection
 
-bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, double roi_X, double roi_Y, double roi_width, double roi_height)
+bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, feature::WhiteLightSettings settings)
 {
+
+    double roi_X = settings.roi_X;
+    double roi_Y = settings.roi_Y;
+    double roi_width = settings.roi_width;
+    double roi_height = settings.roi_height;
     bool result = false;
     CvPoint upperLeft = cvPoint(buoy.image_x +(int)((roi_X*buoy.image_radius)-((roi_width*buoy.image_radius)/2)), (buoy.image_y-buoy.image_radius)+(int)((roi_Y*buoy.image_radius)-(roi_height*buoy.image_radius)));
     CvPoint lowerRight = cvPoint(upperLeft.x+(int)(roi_width*buoy.image_radius), upperLeft.y+(int)(roi_height*buoy.image_radius));
     CvRect rect = cvRect(upperLeft.x,upperLeft.y,(int)(roi_width*buoy.image_radius),(int)(roi_height*buoy.image_radius));
     if(rect.y > 0 && rect.x > 0){
     cvSetImageROI(img, rect);
-    result = GetWhiteLightState(img);
+    result = getWhiteLightState(img);
     cvResetImageROI(img);
     }
     return result;
@@ -335,10 +340,9 @@ int HSVColorBuoyDetector::combineAndCount(IplImage *sat,IplImage *val, IplImage 
 }
 
 
-bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img){
+bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img, feature::WhiteLightSettings settings){
 
-valBinary=254;
-satBinary=0;
+
     IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
 
@@ -350,10 +354,10 @@ satBinary=0;
 	IplImage* dest = cvCreateImage(cvGetSize(copy), 8, 1);
 	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
 
-    cvThreshold(v_plane, v_plane, valBinary, 255, CV_THRESH_BINARY);
-    cvThreshold(s_plane, s_plane, satBinary, 255, CV_THRESH_BINARY);
+    cvThreshold(v_plane, v_plane, settings.val_Binary_Threshold, 255, CV_THRESH_BINARY);
+    cvThreshold(s_plane, s_plane, settings.sat_Binary_Threshold, 255, CV_THRESH_BINARY);
 
-    int counter =CombineAndCount(s_plane,v_plane,dest);
+    int counter =combineAndCount(s_plane,v_plane,dest);
 
 	cvReleaseImage(&h_plane);
 	cvReleaseImage(&s_plane);
