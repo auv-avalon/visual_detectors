@@ -83,11 +83,11 @@ class HSVColorBuoyDetector : public BuoyDetector {
     bool findWhiteLight(IplImage* img, feature::Buoy buoy, feature::WhiteLightSettings settings);
 
 	IplImage* getHshaded(); //wichtig
-	IplImage* Sshaded();
-	IplImage* Vshaded();
-	IplImage* Hplane();
-	IplImage* Splane();	//wichtig
-	IplImage* Vplane();
+	IplImage* getSshaded();
+	IplImage* getVshaded();
+	IplImage* getHplane();
+	IplImage* getSplane();	//wichtig
+	IplImage* getVplane();
 
 
  private:
