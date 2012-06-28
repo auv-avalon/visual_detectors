@@ -13,11 +13,7 @@ const CvScalar circleColor = cvScalar(0, 255, 0);
 
 //images for debug-output
 IplImage* h_shaded;
-IplImage* s_shaded;
-IplImage* v_shaded;
-IplImage* h_plane;
 IplImage* s_plane;
-IplImage* v_plane;
 
 // ---------------------------------------------------------------------------------------
 
@@ -28,12 +24,8 @@ HSVColorBuoyDetector::HSVColorBuoyDetector() :
 
 HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 	//Release images
-	cvReleaseImage(&h_plane);
 	cvReleaseImage(&s_plane);
-	cvReleaseImage(&v_plane);
 	cvReleaseImage(&h_shaded);
-	cvReleaseImage(&s_shaded);
-	cvReleaseImage(&v_shaded);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -193,10 +185,8 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
-	h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
 	s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-	v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
+	cvCvtPixToPlane(copy, 0, s_plane, 0, 0);
 
 	//Shading correction
 	cvCvtColor(copy, copy, CV_HSV2RGB);
@@ -205,12 +195,9 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	//Split shaded images to single HSV planes
 	cvCvtColor(copy, copy, CV_RGB2HSV);
 	h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-	s_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-	v_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-	cvCvtPixToPlane(copy, h_shaded, s_shaded, v_shaded, 0);
+	cvCvtPixToPlane(copy, h_shaded, 0, 0, 0);
 
 	//create binary images
-	cvThreshold(h_plane, h_plane, h_threshold, 255, CV_THRESH_BINARY);
 	cvThreshold(h_shaded, h_shaded, h_threshold, 255, CV_THRESH_BINARY);
 	cvThreshold(s_plane, s_plane, s_threshold, 255, CV_THRESH_BINARY);
 
@@ -373,23 +360,9 @@ bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img, feature::WhiteLight
 IplImage* HSVColorBuoyDetector::getHshaded(){
 	return h_shaded;		//wichtig
 }
-IplImage* HSVColorBuoyDetector::getSshaded(){
-	return s_shaded;
-}
-IplImage* HSVColorBuoyDetector::getVshaded(){
-	return v_shaded;
-}
-IplImage* HSVColorBuoyDetector::getHplane(){
-	return h_plane;
-}
 IplImage* HSVColorBuoyDetector::getSplane(){
 	return s_plane;			//wichtig
 }
-IplImage* HSVColorBuoyDetector::getVplane(){
-	return v_plane;
-}
-
-
 /////////////////////
 } // namespace avalon
 
