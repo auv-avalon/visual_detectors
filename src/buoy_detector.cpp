@@ -22,7 +22,7 @@ IplImage* v_plane;
 // ---------------------------------------------------------------------------------------
 
 HSVColorBuoyDetector::HSVColorBuoyDetector() :
-	satMax(0), valMax(0), 
+	satMax(0), valMax(0),
 			configHoughThreshold(100), configEdgeThreshold(200) {
 }
 
@@ -186,7 +186,7 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 
 ////////SAUC-E/////////////
 std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
-	double h_threshold, double s_threshold, bool testMode) {
+	double h_threshold, double s_threshold) {
 
 	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
@@ -235,7 +235,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 	std::vector < feature::Buoy > result;
 
         cv::Mat dil;
-	dil = cv::Mat(s_plane,true); 
+	dil = cv::Mat(s_plane,true);
 
 	std::vector < cv::Vec3f > circles;
 

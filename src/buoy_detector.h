@@ -1,9 +1,9 @@
 /*
  * Visual Detectors - buoy_detector.h
- * Implementation for detecing a buoy based on color extraction 
+ * Implementation for detecing a buoy based on color extraction
  * and hough transformation in HSV space.
- * 
- * created by: 
+ *
+ * created by:
  *      Fabian Zenker <fzenker@informatik.uni-bremen.de>
  */
 
@@ -31,7 +31,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
         HUE, SATURATION, VALUE
      };
 
-    /** 
+    /**
       * generates a standard buoy detector with a default configuration
       */
      HSVColorBuoyDetector();
