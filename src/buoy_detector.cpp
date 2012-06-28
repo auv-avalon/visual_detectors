@@ -294,7 +294,7 @@ bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, dou
     CvRect rect = cvRect(upperLeft.x,upperLeft.y,(int)(roi_width*buoy.image_radius),(int)(roi_height*buoy.image_radius));
     if(rect.y > 0 && rect.x > 0){
     cvSetImageROI(img, rect);
-    result = GetWhiteLightState(img);
+    result = getWhiteLightState(img);
     cvResetImageROI(img);
     }
     return result;
@@ -337,8 +337,9 @@ int HSVColorBuoyDetector::combineAndCount(IplImage *sat,IplImage *val, IplImage 
 
 bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img){
 
-valBinary=254;
-satBinary=0;
+	int valBinary=254;
+	int satBinary=0;
+
     IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
 
@@ -353,7 +354,7 @@ satBinary=0;
     cvThreshold(v_plane, v_plane, valBinary, 255, CV_THRESH_BINARY);
     cvThreshold(s_plane, s_plane, satBinary, 255, CV_THRESH_BINARY);
 
-    int counter =CombineAndCount(s_plane,v_plane,dest);
+    int counter =combineAndCount(s_plane,v_plane,dest);
 
 	cvReleaseImage(&h_plane);
 	cvReleaseImage(&s_plane);
@@ -369,19 +370,19 @@ satBinary=0;
 IplImage* HSVColorBuoyDetector::getHshaded(){
 	return h_shaded;		//wichtig
 }
-IplImage* HSVColorBuoyDetector::Sshaded(){
+IplImage* HSVColorBuoyDetector::getSshaded(){
 	return s_shaded;
 }
-IplImage* HSVColorBuoyDetector::Vshaded(){
+IplImage* HSVColorBuoyDetector::getVshaded(){
 	return v_shaded;
 }
-IplImage* HSVColorBuoyDetector::Hplane(){
+IplImage* HSVColorBuoyDetector::getHplane(){
 	return h_plane;
 }
-IplImage* HSVColorBuoyDetector::Splane(){
+IplImage* HSVColorBuoyDetector::getSplane(){
 	return s_plane;			//wichtig
 }
-IplImage* HSVColorBuoyDetector::Vplane(){
+IplImage* HSVColorBuoyDetector::getVplane(){
 	return v_plane;
 }
 
