@@ -286,9 +286,12 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 
 //White Light Detection
 
-bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, cv::Rect rect)
+bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, double roi_X, double roi_Y, double roi_width, double roi_height)
 {
     bool result = false;
+    CvPoint upperLeft = cvPoint(buoy.image_x +(int)((roi_X*buoy.image_radius)-((roi_width*buoy.image_radius)/2)), (buoy.image_y-buoy.image_radius)+(int)((roi_Y*buoy.image_radius)-(roi_height*buoy.image_radius)));
+    CvPoint lowerRight = cvPoint(upperLeft.x+(int)(roi_width*buoy.image_radius), upperLeft.y+(int)(roi_height*buoy.image_radius));
+    CvRect rect = cvRect(upperLeft.x,upperLeft.y,(int)(roi_width*buoy.image_radius),(int)(roi_height*buoy.image_radius));
     if(rect.y > 0 && rect.x > 0){
     cvSetImageROI(img, rect);
     result = GetWhiteLightState(img);
