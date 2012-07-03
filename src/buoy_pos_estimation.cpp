@@ -3,17 +3,12 @@
 
 namespace avalon{
 
-    BuoyPosEstimator::BuoyPosEstimator(double r) : buoyRadius(r)
-    {
-
-    }
-
     BuoyPosEstimator::BuoyPosEstimator()
     {
 
     }
 
-    void BuoyPosEstimator::estimateCWKoordinates(feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame)
+    void BuoyPosEstimator::estimateCWKoordinates(feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame, float buoyRadius)
     {
 	//check if the Frame has fx and fy and set them if not
 	if(!frame.hasAttribute("fx"))
@@ -39,11 +34,11 @@ namespace avalon{
     }
 
 
-    base::Vector3d BuoyPosEstimator::estimateAuvKoordinates(feature::Buoy& buoy, base::samples::frame::Frame &frame)
+    base::Vector3d BuoyPosEstimator::estimateAuvKoordinates(feature::Buoy& buoy, base::samples::frame::Frame &frame, float r)
     {
         frame_helper::FrameHelper fh = frame_helper::FrameHelper();
         //estimate world-koordinates relative to camera
-        estimateCWKoordinates(buoy,fh,frame);
+        estimateCWKoordinates(buoy,fh,frame, r);
         //transfer the koordinates relative to the AUV
         //TODO:...
 	

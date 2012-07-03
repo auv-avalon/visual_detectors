@@ -34,22 +34,20 @@ namespace avalon{
             //relativ to the camera of the AUV
             //parameters:
             //buoy        a pointer to a Buoy
-            void estimateCWKoordinates(avalon::feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame);
+            void estimateCWKoordinates(avalon::feature::Buoy& buoy,frame_helper::FrameHelper fh, base::samples::frame::Frame &frame, float buoyRadius);
 	    
 	    //transforms the Koordinates wich are relative to the camera 
 	    //relative to the AUV-Center
 	    void transformKoordinates(avalon::feature::Buoy& buoy);
         public:
-            float buoyRadius;
 
-            BuoyPosEstimator(double r);
             BuoyPosEstimator();
 
             //calculates the position of the buoy relativ to the center of the AUV
             //and stores it into the buoy itself
             //parameters:
             //buoy        a pointer to a Buoy
-            base::Vector3d estimateAuvKoordinates(avalon::feature::Buoy& buoy,base::samples::frame::Frame &frame);
+            base::Vector3d estimateAuvKoordinates(avalon::feature::Buoy& buoy,base::samples::frame::Frame &frame, float r);
 		
     };
 }
