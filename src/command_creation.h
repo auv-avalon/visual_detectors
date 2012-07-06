@@ -19,6 +19,7 @@ enum Direction{
 class CommandCreator{
     private:
     double good_dist;
+	double tiefenspiel;
 
 
     public:
@@ -27,6 +28,7 @@ class CommandCreator{
     CommandCreator(double d);
 
     base::AUVPositionCommand centerBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth = -2.4, double maxX = 0.2, double headingFactor = 1.0);
+	base::AUVPositionCommand centerBuoyHeadingFixed(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth = -2.4, double maxX = 0.2, double target_heading = 0);
     base::AUVPositionCommand strafeBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double intensity, double desired_buoy_depth = -2.4, double headingFactor = 1.0, double headingModulation = 0.2);
     base::AUVPositionCommand cutBuoy(base::samples::RigidBodyState rbs, double desired_buoy_depth = -2.4, double h = 0.3);
     base::AUVPositionCommand cutBuoy(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth = -2.4, double h=0.3);
