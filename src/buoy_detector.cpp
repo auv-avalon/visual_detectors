@@ -14,6 +14,7 @@ const CvScalar circleColor = cvScalar(0, 255, 0);
 //images for debug-output
 IplImage* h_shaded;
 IplImage* s_plane;
+IplImage* debug_image;
 
 // ---------------------------------------------------------------------------------------
 
@@ -26,6 +27,7 @@ HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 	//Release images
 	cvReleaseImage(&s_plane);
 	cvReleaseImage(&h_shaded);
+	cvReleaseImage(&debug_image);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -182,6 +184,8 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
+//only for initialization
+	debug_image=copy;
 
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
@@ -288,6 +292,10 @@ bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, fea
     cvSetImageROI(img, rect);
     result = getWhiteLightState(img, settings);
     cvResetImageROI(img);
+
+
+	//das bild das du auf debug-image schreibst wird ausgegeben
+	debug_image = img;
     }
     return result;
 }
@@ -362,6 +370,9 @@ IplImage* HSVColorBuoyDetector::getHshaded(){
 }
 IplImage* HSVColorBuoyDetector::getSplane(){
 	return s_plane;			//wichtig
+}
+IplImage* HSVColorBuoyDetector::getDebugImage(){
+	return debug_image;
 }
 /////////////////////
 } // namespace avalon

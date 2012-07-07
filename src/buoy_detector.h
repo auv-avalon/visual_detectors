@@ -89,6 +89,8 @@ class HSVColorBuoyDetector : public BuoyDetector {
 	IplImage* getSplane();	//wichtig
 	IplImage* getVplane();
 
+	IplImage* getDebugImage();
+
 
  private:
      int filterByHue(int H, int S, int V);
