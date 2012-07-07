@@ -6,10 +6,10 @@ using namespace avalon;
 
 CommandCreator::CommandCreator() : good_dist(2), tiefenspiel(0.5)
 {
-
+	
 }
 
-CommandCreator::CommandCreator(double d) : good_dist(d)
+CommandCreator::CommandCreator(double d) : good_dist(d), tiefenspiel(0.5)
 {
 
 }
@@ -29,25 +29,29 @@ base::AUVPositionCommand CommandCreator::centerBuoy(feature::Buoy &buoy, base::s
         heading*=headingFactor;
     }
     double z = buoy.world_coord(2);
-	if(z>0.3)z=0.3;
-    if(z<-0.3)z=-0.3;
-        base::AUVPositionCommand command;
-        command.heading =heading;
-        command.x = (buoy.world_coord(0) - good_dist)*0.2;  //distance
+	if(z>0.3)	z=0.3;
+    if(z<-0.3)	z=-0.3;
+    base::AUVPositionCommand command;
+    command.heading =heading*headingFactor;
+    command.x = (buoy.world_coord(0) - good_dist)*0.2;  //distance
 	// cap the maximum x speed
 	if(command.x > maxX)
 	    command.x = maxX;
 	if(command.x < -maxX)
 	    command.x = -maxX;
-        command.y = 0; // no strafing
-        base::Pose p = rbs.getPose();
-    	command.z = p.position[2]+z;	//depth
-    	if(command.z > desired_buoy_depth+tiefenspiel) command.z = desired_buoy_depth+tiefenspiel;
-    	if(command.z < desired_buoy_depth-tiefenspiel) command.z = desired_buoy_depth-tiefenspiel;
-    return command;
+    command.y = 0; // no strafing
+    base::Pose p = rbs.getPose();
+    z = p.position[2]+z;	//depth
+    if(z > desired_buoy_depth+tiefenspiel) z = desired_buoy_depth+tiefenspiel;
+    if(z < desired_buoy_depth-tiefenspiel) z = desired_buoy_depth-tiefenspiel;
+	command.z = z;    
+
+//	std::cout << "desired_bouy_depth: " << desired_buoy_depth << ", current depth: " << p.position[2] << ", command.z: " << z << std::endl;
+
+	return command;
 }
 
-base::AUVPositionCommand CommandCreator::centerBuoyHeadingFixed(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth, double maxX, double target_heading){
+base::AUVPositionCommand CommandCreator::centerBuoyHeadingFixed(feature::Buoy &buoy, base::samples::RigidBodyState rbs, double desired_buoy_depth, double maxX, double target_heading, double headingFactor){
 	double heading = 0;
     if(buoy.world_coord(0)!=0)
     {
@@ -64,7 +68,7 @@ base::AUVPositionCommand CommandCreator::centerBuoyHeadingFixed(feature::Buoy &b
 	if(z>0.3)z=0.3;
     if(z<-0.3)z=-0.3;
     base::AUVPositionCommand command;
-    command.heading = (heading_diff+heading)/2;
+    command.heading = (heading_diff+heading)/2*headingFactor;
     command.x = (buoy.world_coord(0) - good_dist)*0.2;  //distance
 	if(command.x > maxX)
 	    command.x = maxX;
@@ -72,9 +76,10 @@ base::AUVPositionCommand CommandCreator::centerBuoyHeadingFixed(feature::Buoy &b
 	    command.x = -maxX;
     command.y = buoy.world_coord(1);
     base::Pose p = rbs.getPose();
-    command.z = p.position[2]+z;	//depth
-    if(command.z > desired_buoy_depth+tiefenspiel) command.z = desired_buoy_depth+tiefenspiel;
-    if(command.z < desired_buoy_depth-tiefenspiel) command.z = desired_buoy_depth-tiefenspiel;
+    z = p.position[2]+z;	//depth
+    if(z > desired_buoy_depth+tiefenspiel) z = desired_buoy_depth+tiefenspiel;
+    if(z < desired_buoy_depth-tiefenspiel) z = desired_buoy_depth-tiefenspiel;
+	command.z = z;
     return command;
 
 }
@@ -93,21 +98,23 @@ base::AUVPositionCommand CommandCreator::strafeBuoy(feature::Buoy &buoy, base::s
     }
 
     if(intensity>0){  //strafe nach links
-        command.x=0;
-        command.y=intensity;
-        command.heading=heading - headingModulation;
-        base::Pose p = rbs.getPose();
-    	command.z = p.position[2]+z;	//depth
-    	if(command.z > desired_buoy_depth+tiefenspiel) command.z = desired_buoy_depth+tiefenspiel;
-    	if(command.z < desired_buoy_depth-tiefenspiel) command.z = desired_buoy_depth-tiefenspiel;
+    	command.x=0;
+    	command.y=intensity;
+    	command.heading=heading*headingFactor - headingModulation;
+    	base::Pose p = rbs.getPose();
+    	z = p.position[2]+z;	//depth
+   		if(z > desired_buoy_depth+tiefenspiel) z = desired_buoy_depth+tiefenspiel;
+   	 	if(z < desired_buoy_depth-tiefenspiel) z = desired_buoy_depth-tiefenspiel;
+		command.z = z;
     }else{            //strafe nach rechts
         command.x=0;
         command.y=intensity;
         command.heading=heading + headingModulation;
     	base::Pose p = rbs.getPose();
-    	command.z = p.position[2]+z;	//depth
-    	if(command.z > desired_buoy_depth+tiefenspiel) command.z = desired_buoy_depth+tiefenspiel;
-    	if(command.z < desired_buoy_depth-tiefenspiel) command.z = desired_buoy_depth-tiefenspiel;
+    	z = p.position[2]+z;	//depth
+    	if(z > desired_buoy_depth+tiefenspiel) z = desired_buoy_depth+tiefenspiel;
+    	if(z < desired_buoy_depth-tiefenspiel) z = desired_buoy_depth-tiefenspiel;
+		command.z = z;
     }
     return command;
 }
@@ -149,9 +156,6 @@ base::AUVPositionCommand CommandCreator::cutBuoy(feature::Buoy &buoy, base::samp
     base::Pose p = rbs.getPose();
 //Die Tiefe erhöht sich immer weiter. daher wäre es sinnvoll eine maximale tiefe desired_buoy_depth+h+0.3 fest zu legen
     command.z = p.position[2]+h;
-//    command.z = desired_buoy_depth+h;	//depth
-//    if(command.z > desired_buoy_depth+0.3+h) command.z = desired_buoy_depth+0.3+h;
-//    if(command.z < desired_buoy_depth-0.3+h) command.z = desired_buoy_depth-0.3+h;
     return command;
 }
 
