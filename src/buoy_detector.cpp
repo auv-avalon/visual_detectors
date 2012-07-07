@@ -184,13 +184,15 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
 	cvCopy(img, copy);
-//only for initialization
-	debug_image=copy;
 
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
 	s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
 	cvCvtPixToPlane(copy, 0, s_plane, 0, 0);
+
+	//only for initialization
+	debug_image = cvCreateImage(cvGetSize(copy), 8, 1);
+	cvCvtPixToPlane(copy, 0, debug_image, 0, 0);
 
 	//Shading correction
 	cvCvtColor(copy, copy, CV_HSV2RGB);
@@ -289,13 +291,9 @@ bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, fea
     CvPoint lowerRight = cvPoint(upperLeft.x+(int)(roi_width*buoy.image_radius), upperLeft.y+(int)(roi_height*buoy.image_radius));
     CvRect rect = cvRect(upperLeft.x,upperLeft.y,(int)(roi_width*buoy.image_radius),(int)(roi_height*buoy.image_radius));
     if(rect.y > 0 && rect.x > 0){
-    cvSetImageROI(img, rect);
-    result = getWhiteLightState(img, settings);
-    cvResetImageROI(img);
-
-
-	//das bild das du auf debug-image schreibst wird ausgegeben
-	debug_image = img;
+    	cvSetImageROI(img, rect);
+    	result = getWhiteLightState(img, settings);
+    	cvResetImageROI(img);
     }
     return result;
 }
