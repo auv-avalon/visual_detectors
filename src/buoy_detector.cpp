@@ -1,6 +1,7 @@
 #include "buoy_detector.h"
 //#include <stdio.h>
 #include <Eigen/Core>
+#include <iostream>
 namespace avalon {
 
 // ---------------------------------------------------------------------------------------
@@ -305,6 +306,12 @@ bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, fea
     	result = getWhiteLightState(img, settings);
     	cvResetImageROI(img);
     }
+
+	std::cout << "===========================================================" << std::endl;
+	std::cout << "Boje x - y - r: " << buoy.image_x << " - " << buoy.image_y << " - " << buoy.image_radius << std::endl;
+	std::cout << "img-size width - height: " << size.width << " - " << size.height << std::endl;
+	std::cout << "oben-links x - y: " << upperLeft.x << " - " << upperLeft.y << std::endl;
+
     return result;
 }
 
@@ -312,6 +319,7 @@ int HSVColorBuoyDetector::combineAndCount(IplImage *sat,IplImage *val, IplImage 
 {
 
 	CvSize size=cvGetSize(sat);
+
 	uchar *dataSat  = (uchar *)sat->imageData;
 	uchar *dataVal  = (uchar *)val->imageData;
 	uchar *dataDest  = (uchar *)dest->imageData;
@@ -366,7 +374,7 @@ bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img, feature::WhiteLight
 
     cvSmooth(s_plane, s_plane, CV_MEDIAN, 5, 5);
     int counter =combineAndCount(s_plane,0,dest);
-
+	
     //Debug-GUI
     debug_image = cvCreateImage(cvGetSize(getSplane()), 8, 1);
 	cvResize(s_plane, debug_image);
