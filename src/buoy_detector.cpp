@@ -192,7 +192,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	//only for initialization
 	debug_image = cvCreateImage(cvGetSize(copy), 8, 1);
-	cvCvtPixToPlane(copy, 0, debug_image, 0, 0);
+	//cvCvtPixToPlane(copy, 0, debug_image, 0, 0);
 
 	//Shading correction
 	cvCvtColor(copy, copy, CV_HSV2RGB);
@@ -289,6 +289,16 @@ bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, fea
     bool result = false;
     CvPoint upperLeft = cvPoint(buoy.image_x +(int)((roi_X*buoy.image_radius)-((roi_width*buoy.image_radius)/2)), (buoy.image_y-buoy.image_radius)+(int)((roi_Y*buoy.image_radius)-(roi_height*buoy.image_radius)));
     CvPoint lowerRight = cvPoint(upperLeft.x+(int)(roi_width*buoy.image_radius), upperLeft.y+(int)(roi_height*buoy.image_radius));
+    if(upperLeft.x<1){
+        upperLeft.x =1;
+    }
+    CvSize size=cvGetSize(img);
+    if(upperLeft.y<25){
+        upperLeft.y =25;
+    }
+    if(lowerRight.x>-size.width-1){
+        lowerRight.x=size.width-1;
+    }
     CvRect rect = cvRect(upperLeft.x,upperLeft.y,(int)(roi_width*buoy.image_radius),(int)(roi_height*buoy.image_radius));
     if(rect.y > 0 && rect.x > 0){
     	cvSetImageROI(img, rect);
@@ -316,7 +326,8 @@ int HSVColorBuoyDetector::combineAndCount(IplImage *sat,IplImage *val, IplImage 
 			uchar curVal = dataVal[i*step+j];
 
 
-			if(curSat==0 &&curVal==255)
+			//if(curSat==0 &&curVal==255)
+			if(curSat==255)
 			{
 				((uchar *)(dataDest+i*step))[j]=255;
 				counter++;
@@ -332,7 +343,9 @@ int HSVColorBuoyDetector::combineAndCount(IplImage *sat,IplImage *val, IplImage 
 	return counter;
 }
 
-
+int whiteLightCounter = 0;
+int blackLightCounter = 0;
+bool lastState = false;
 bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img, feature::WhiteLightSettings settings){
 
 
@@ -341,25 +354,48 @@ bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img, feature::WhiteLight
 
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
-	IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	//IplImage* h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
 	IplImage* s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
-	IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+	//IplImage* v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
 	IplImage* dest = cvCreateImage(cvGetSize(copy), 8, 1);
-	cvCvtPixToPlane(copy, h_plane, s_plane, v_plane, 0);
+	cvCvtPixToPlane(copy, 0, s_plane, 0, 0);
 
-    cvThreshold(v_plane, v_plane, settings.val_Binary_Threshold, 255, CV_THRESH_BINARY);
+   // cvThreshold(v_plane, v_plane, settings.val_Binary_Threshold, 255, CV_THRESH_BINARY);
     cvThreshold(s_plane, s_plane, settings.sat_Binary_Threshold, 255, CV_THRESH_BINARY);
+	//only for initialization
 
-    int counter =combineAndCount(s_plane,v_plane,dest);
+    cvSmooth(s_plane, s_plane, CV_MEDIAN, 5, 5);
+    int counter =combineAndCount(s_plane,0,dest);
 
-	cvReleaseImage(&h_plane);
+    //Debug-GUI
+    debug_image = cvCreateImage(cvGetSize(getSplane()), 8, 1);
+	cvResize(s_plane, debug_image);
+
+	//cvReleaseImage(&h_plane);
 	cvReleaseImage(&s_plane);
-	cvReleaseImage(&v_plane);
+	//cvReleaseImage(&v_plane);
 	cvReleaseImage(&dest);
 	cvReleaseImage(&copy);
 
-	return counter>10;
-}
+if(counter>20){
+    whiteLightCounter++;
+    blackLightCounter=0;
+
+    }else
+    {
+        blackLightCounter++;
+        whiteLightCounter=0;
+    }
+
+
+    if(whiteLightCounter>=8){
+        lastState =true;
+    }
+    if(blackLightCounter>=8 ){
+        lastState =false;
+    }
+        return lastState;
+    }
 
 
 // Ports:
