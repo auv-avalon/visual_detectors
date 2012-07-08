@@ -288,8 +288,12 @@ bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, fea
     double roi_width = settings.roi_width;
     double roi_height = settings.roi_height;
     bool result = false;
-    CvPoint upperLeft = cvPoint(buoy.image_x +(int)((roi_X*buoy.image_radius)-((roi_width*buoy.image_radius)/2)), (buoy.image_y-buoy.image_radius)+(int)((roi_Y*buoy.image_radius)-(roi_height*buoy.image_radius)));
-    CvPoint lowerRight = cvPoint(upperLeft.x+(int)(roi_width*buoy.image_radius), upperLeft.y+(int)(roi_height*buoy.image_radius));
+    int p1_x = buoy.image_x-(settings.roi_X * buoy.image_radius) - (roi_width*buoy.image_radius)/2;
+	int p1_y = buoy.image_y- buoy.image_radius + (settings.roi_Y*buoy.image_radius) -(roi_height*buoy.image_radius);
+    int p3_x = p1_x+(roi_width*buoy.image_radius);
+    int p3_y = p1_y + (roi_height*buoy.image_radius);
+    CvPoint upperLeft = cvPoint(p1_x, p1_y);
+    CvPoint lowerRight = cvPoint(p3_x,p3_y);
     if(upperLeft.x<1){
         upperLeft.x =1;
     }
@@ -306,11 +310,6 @@ bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, fea
     	result = getWhiteLightState(img, settings);
     	cvResetImageROI(img);
     }
-
-	std::cout << "===========================================================" << std::endl;
-	std::cout << "Boje x - y - r: " << buoy.image_x << " - " << buoy.image_y << " - " << buoy.image_radius << std::endl;
-	std::cout << "img-size width - height: " << size.width << " - " << size.height << std::endl;
-	std::cout << "oben-links x - y: " << upperLeft.x << " - " << upperLeft.y << std::endl;
 
     return result;
 }
@@ -374,7 +373,7 @@ bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img, feature::WhiteLight
 
     cvSmooth(s_plane, s_plane, CV_MEDIAN, 5, 5);
     int counter =combineAndCount(s_plane,0,dest);
-	
+
     //Debug-GUI
     debug_image = cvCreateImage(cvGetSize(getSplane()), 8, 1);
 	cvResize(s_plane, debug_image);
