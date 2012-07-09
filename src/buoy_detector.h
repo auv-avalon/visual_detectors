@@ -106,6 +106,12 @@ class HSVColorBuoyDetector : public BuoyDetector {
      int configHighHue;
      int configHoughThreshold;
      int configEdgeThreshold;
+
+     //images for debug-output
+     IplImage* h_shaded;
+     IplImage* s_plane;
+     IplImage* debug_image;
+     IplImage* copy;
 };
 
 } // namespace avalon

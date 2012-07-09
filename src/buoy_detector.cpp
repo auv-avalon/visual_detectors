@@ -12,23 +12,28 @@ const unsigned char cCTSat[] = { 255, 0 };
 const unsigned char cCTVal[] = { 255, 0 };
 const CvScalar circleColor = cvScalar(0, 255, 0);
 
-//images for debug-output
-IplImage* h_shaded;
-IplImage* s_plane;
-IplImage* debug_image;
 
 // ---------------------------------------------------------------------------------------
 
 HSVColorBuoyDetector::HSVColorBuoyDetector() :
 	satMax(0), valMax(0),
 			configHoughThreshold(100), configEdgeThreshold(200) {
+      s_plane = NULL;
+      h_shaded = NULL;
+      debug_image = NULL;
+      copy = NULL;
 }
 
 HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 	//Release images
+      if(s_plane)
 	cvReleaseImage(&s_plane);
+      if(h_shaded)
 	cvReleaseImage(&h_shaded);
+      if(debug_image)
 	cvReleaseImage(&debug_image);
+      if(copy)
+	cvReleaseImage(&copy);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -183,16 +188,21 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	double h_threshold, double s_threshold) {
 
-	IplImage* copy = cvCreateImage(cvGetSize(img), 8, 3);
+        if(!copy)
+        {
+	  copy = cvCreateImage(cvGetSize(img), 8, 3);
+        }  
 	cvCopy(img, copy);
 
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
-	s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+        if(!s_plane)
+	  s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
 	cvCvtPixToPlane(copy, 0, s_plane, 0, 0);
 
 	//only for initialization
-	debug_image = cvCreateImage(cvGetSize(copy), 8, 1);
+        if(!debug_image)
+	  debug_image = cvCreateImage(cvGetSize(copy), 8, 1);
 	//cvCvtPixToPlane(copy, 0, debug_image, 0, 0);
 
 	//Shading correction
@@ -201,7 +211,8 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 
 	//Split shaded images to single HSV planes
 	cvCvtColor(copy, copy, CV_RGB2HSV);
-	h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
+        if(!h_shaded)
+	  h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
 	cvCvtPixToPlane(copy, h_shaded, 0, 0, 0);
 
 	//create binary images
@@ -219,7 +230,6 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
 	std::vector < feature::Buoy > result ;
 	result = detect(s_plane, h_shaded);
 
-	cvReleaseImage(&copy);
 	return result;
 }
 
