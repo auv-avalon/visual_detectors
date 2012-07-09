@@ -1,7 +1,7 @@
 #include "buoy_detector.h"
 //#include <stdio.h>
 #include <Eigen/Core>
-#include <iostream>
+//#include <iostream>
 namespace avalon {
 
 // ---------------------------------------------------------------------------------------
@@ -283,29 +283,38 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 bool HSVColorBuoyDetector::findWhiteLight(IplImage* img, feature::Buoy buoy, feature::WhiteLightSettings settings)
 {
 
-    double roi_X = settings.roi_X;
-    double roi_Y = settings.roi_Y;
     double roi_width = settings.roi_width;
     double roi_height = settings.roi_height;
     bool result = false;
-    int p1_x = buoy.image_x-(settings.roi_X * buoy.image_radius) - (roi_width*buoy.image_radius)/2;
-	int p1_y = buoy.image_y- buoy.image_radius + (settings.roi_Y*buoy.image_radius) -(roi_height*buoy.image_radius);
-    int p3_x = p1_x+(roi_width*buoy.image_radius);
-    int p3_y = p1_y + (roi_height*buoy.image_radius);
-    CvPoint upperLeft = cvPoint(p1_x, p1_y);
-    CvPoint lowerRight = cvPoint(p3_x,p3_y);
-    if(upperLeft.x<1){
-        upperLeft.x =1;
+    int width = (int)(roi_width*buoy.image_radius);
+    int height = (int)(roi_height*buoy.image_radius);
+    int p1_x = buoy.image_x - width/2 - (settings.roi_X * buoy.image_radius);
+    int p1_y = buoy.image_y- buoy.image_radius -height - (settings.roi_Y * buoy.image_radius) ;
+    int p3_x = p1_x + width;
+
+
+    if(p1_x<1){
+        p1_x =1;
     }
     CvSize size=cvGetSize(img);
-    if(upperLeft.y<25){
-        upperLeft.y =25;
+  
+
+    if(p1_y < 10){
+	height = height - (10- p1_y);
+	if(height<5){
+	return false;
+	}
+        p1_y = 10;
+
     }
-    if(lowerRight.x>-size.width-1){
-        lowerRight.x=size.width-1;
+
+    if(p3_x > size.width-1){
+        width=size.width-1-p1_x;
     }
-    CvRect rect = cvRect(upperLeft.x,upperLeft.y,(int)(roi_width*buoy.image_radius),(int)(roi_height*buoy.image_radius));
-    if(rect.y > 0 && rect.x > 0){
+
+    CvRect rect = cvRect(p1_x,p1_y, width, height);
+
+    if(rect.y > 0 && rect.x > 0 && p1_x + width < size.width && rect.y +height < size.height){
     	cvSetImageROI(img, rect);
     	result = getWhiteLightState(img, settings);
     	cvResetImageROI(img);
