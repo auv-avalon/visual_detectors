@@ -15,6 +15,7 @@
 -->
 <depend package="avalon/types" />
 <depend package="opencv" />
+<depend package="image_processing/frame_helper" />
 <!--DEPEND-ENTRY-->
   <versioncontrol type="git" url="" />
   <export>
