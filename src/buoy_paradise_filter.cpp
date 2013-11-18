@@ -43,7 +43,7 @@ void BuoyParadiseFilter::doTimestep()
         		continue;
         	}
             base::Time t = base::Time::now();
-            int64_t x = t.microseconds-buoys_buffer[i].front().stamp.microseconds;
+            int64_t x = t.microseconds-buoys_buffer[i].front().time.microseconds;
             if(x>maxage)
             {
                 if(buoys_buffer[i].size()==1) buoys_buffer[i].pop_back();
