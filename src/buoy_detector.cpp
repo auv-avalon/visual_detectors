@@ -16,10 +16,13 @@ const CvScalar circleColor = cvScalar(0, 255, 0);
 // ---------------------------------------------------------------------------------------
 
 HSVColorBuoyDetector::HSVColorBuoyDetector() :
-	satMax(0), valMax(0),
-			configHoughThreshold(100), configEdgeThreshold(200) {
+			houghAccumulatorThresholdH(100), houghAccumulatorThresholdS(100), houghAccumulatorThresholdV(100), houghEdgeThresholdH(200), houghEdgeThresholdS(200), houghEdgeThresholdV(200) {
+      h_plane = NULL;
       s_plane = NULL;
-      h_shaded = NULL;
+      v_plane = NULL;
+      hsv_gray_debug = NULL;
+      hough_debug = NULL;
+      //h_shaded = NULL;
       debug_image = NULL;
       copy = NULL;
 }
@@ -28,8 +31,8 @@ HSVColorBuoyDetector::~HSVColorBuoyDetector() {
 	//Release images
       if(s_plane)
 	cvReleaseImage(&s_plane);
-      if(h_shaded)
-	cvReleaseImage(&h_shaded);
+      if(h_plane)
+	cvReleaseImage(&h_plane);
       if(debug_image)
 	cvReleaseImage(&debug_image);
       if(copy)
@@ -185,66 +188,145 @@ void HSVColorBuoyDetector::shadingRGB(IplImage* src, IplImage* dest) {
 
 
 ////////SAUC-E/////////////
-std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img,
-	double h_threshold, double s_threshold) {
-
+std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img) {
+        std::cout << "creating copy" << std::endl;
         if(!copy)
         {
 	  copy = cvCreateImage(cvGetSize(img), 8, 3);
         }  
 	cvCopy(img, copy);
 
+        //only for initialization
+        std::cout << " creating images" << std::endl;
+        std::cout << "creating debug" << std::endl;
+        if(!debug_image){
+	  debug_image = cvCreateImage(cvGetSize(img), 8, 3);
+        }
+	cvCopy(img, debug_image);
+	cvCvtColor(debug_image, debug_image, CV_BGR2RGB); // Image to HSV
+
+        std::cout << "creating hsv gray" << std::endl;
+        if(!hsv_gray_debug){
+	  hsv_gray_debug = cvCreateImage(cvGetSize(img), 8, 1);
+        }
+        std::cout << "creating hough debug" << std::endl;
+        if(!hough_debug){
+	  hough_debug = cvCreateImage(cvGetSize(img), 8, 3);
+        }
+	cvCopy(img, hough_debug);
+	cvCvtColor(hough_debug, hough_debug, CV_BGR2RGB); // Image to HSV
 	//Split Image to single HSV planes
 	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
+
+        std::cout << "Creating H Plane" << std::endl;
+        if(!h_plane)
+	  h_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+        std::cout << "Creating S Plane" << std::endl;
         if(!s_plane)
 	  s_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+        std::cout << "Creating V Plane" << std::endl;
+        if(!v_plane)
+	  v_plane = cvCreateImage(cvGetSize(copy), 8, 1);
+        std::cout << "seperate planes" << std::endl;
+        std::cout << "h" << std::endl;
+	cvCvtPixToPlane(copy, h_plane, 0, 0, 0);
+        std::cout << "s" << std::endl;
 	cvCvtPixToPlane(copy, 0, s_plane, 0, 0);
-
-	//only for initialization
-        if(!debug_image)
-	  debug_image = cvCreateImage(cvGetSize(copy), 8, 1);
-	//cvCvtPixToPlane(copy, 0, debug_image, 0, 0);
-
+        std::cout << "v" << std::endl;
+	cvCvtPixToPlane(copy, 0, 0, v_plane, 0);
+        
+        std::cout << "gray debug" << std::endl;
+        if (debug_gray == 0 && debug){
+            cvCopy(h_plane, hsv_gray_debug);
+        } else if (debug_gray == 1 && debug){
+            cvCopy(s_plane, hsv_gray_debug);
+        } else if (debug_gray == 2 && debug){
+            cvCopy(v_plane, hsv_gray_debug);
+        } else if (debug) {
+            std::cerr << "Wrong Debug Gray Param" << std::endl;
+        }
+	cvSmooth(h_plane, h_plane, CV_MEDIAN, hSmooth, 5);
+	cvSmooth(s_plane, s_plane, CV_MEDIAN, sSmooth, 5);
+	cvSmooth(v_plane, v_plane, CV_MEDIAN, vSmooth, 5);
+        std::cout  << "creating binarys" << std::endl;	
+	cvThreshold(h_plane, h_plane, hValueMax, 255, CV_THRESH_TOZERO_INV);
+	cvThreshold(h_plane, h_plane, hValueMin, 255, CV_THRESH_BINARY);
+	cvThreshold(s_plane, s_plane, sValueMax, 255, CV_THRESH_TOZERO_INV);
+	cvThreshold(s_plane, s_plane, sValueMin, 255, CV_THRESH_BINARY);
+	cvThreshold(v_plane, v_plane, vValueMax, 255, CV_THRESH_TOZERO_INV);
+	cvThreshold(v_plane, v_plane, vValueMin, 255, CV_THRESH_BINARY);
+	//cvCircle(debug_image, cvPoint(50, 50), 30,
+	//		cvScalar(0, 0, 255), 2);
 	//Shading correction
-	cvCvtColor(copy, copy, CV_HSV2RGB);
-	shadingRGB(copy, copy);
+	//cvCvtColor(copy, copy, CV_HSV2RGB);
+	//shadingRGB(copy, copy);
 
 	//Split shaded images to single HSV planes
-	cvCvtColor(copy, copy, CV_RGB2HSV);
-        if(!h_shaded)
-	  h_shaded = cvCreateImage(cvGetSize(copy), 8, 1);
-	cvCvtPixToPlane(copy, h_shaded, 0, 0, 0);
+	//cvCvtColor(copy, copy, CV_RGB2HSV);
 
 	//create binary images
-	cvThreshold(h_shaded, h_shaded, h_threshold, 255, CV_THRESH_BINARY);
-	cvThreshold(s_plane, s_plane, s_threshold, 255, CV_THRESH_BINARY);
 
 	//
-	cvRectangle(s_plane, cvPoint(0, 0), cvPoint(img->width, 3),
-			cvScalar(0, 0, 0), CV_FILLED);
 
 	//smooth images
-	cvSmooth(s_plane, s_plane, CV_MEDIAN, 5, 5);
+        std::cout << "smooth images" << std::endl;
 
 	//detect buoys
 	std::vector < feature::Buoy > result ;
-	result = detect(s_plane, h_shaded);
+	result = detect(s_plane, h_plane, v_plane);
 
 	return result;
 }
 
 std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
-		IplImage* h_plane) {
+		IplImage* h_plane, IplImage* v_plane) {
 
 	std::vector < feature::Buoy > result;
-
-        cv::Mat dil;
-	dil = cv::Mat(s_plane,true);
-
-	std::vector < cv::Vec3f > circles;
-
-	cv::HoughCircles(dil, circles, CV_HOUGH_GRADIENT, 2, dil.cols / 4, configEdgeThreshold, configHoughThreshold, 10, 150);
-
+        std::cout << "Houghes" << std::endl;
+        std::cout << "H Hough" << std::endl;
+        cv::Mat dil_h;
+        dil_h = cv::Mat(h_plane,true);
+        std::vector < cv::Vec3f > circles_h;
+        cv::HoughCircles(dil_h, circles_h, CV_HOUGH_GRADIENT, 2, dil_h.cols / 4, houghEdgeThresholdH, houghAccumulatorThresholdH, houghCircleMin, houghCircleMax);
+        if (debug_h){
+            for (int i=0; i<circles_h.size(); i++){
+                int x = cvRound(circles_h[i][0]);
+                int y = cvRound(circles_h[i][1]);
+                int r = cvRound(circles_h[i][2]);
+                cvCircle(hough_debug, cvPoint(x, y), r,
+                        cvScalar(255, 0, 0), 2);
+            }
+        }
+        std::cout << "S Hough" << std::endl;
+        cv::Mat dil_s;
+	dil_s = cv::Mat(s_plane,true);
+	std::vector < cv::Vec3f > circles_s;
+        cv::HoughCircles(dil_s, circles_s, CV_HOUGH_GRADIENT, 2, dil_s.cols / 4, houghEdgeThresholdS, houghAccumulatorThresholdS, houghCircleMin, houghCircleMax);
+        if (debug_s){
+            for (int i=0; i<circles_s.size(); i++){
+                int x = cvRound(circles_s[i][0]);
+                int y = cvRound(circles_s[i][1]);
+                int r = cvRound(circles_s[i][2]);
+                cvCircle(hough_debug, cvPoint(x, y), r,
+                        cvScalar(0, 255, 0), 2);
+            }
+        }
+        std::cout << "V Hough" << std::endl;
+        cv::Mat dil_v;
+	dil_v = cv::Mat(v_plane,true);
+	std::vector < cv::Vec3f > circles_v;
+	cv::HoughCircles(dil_v, circles_v, CV_HOUGH_GRADIENT, 2, dil_v.cols / 4, houghEdgeThresholdV, houghAccumulatorThresholdV, houghCircleMin, houghCircleMax);
+        if (debug_v){
+            for (int i=0; i<circles_v.size(); i++){
+                int x = cvRound(circles_v[i][0]);
+                int y = cvRound(circles_v[i][1]);
+                int r = cvRound(circles_v[i][2]);
+                cvCircle(hough_debug, cvPoint(x, y), r,
+                        cvScalar(0, 0, 255), 2);
+            }
+        }
+        
+/*
 	for (int i = 0; i < circles.size(); i++) {
 		int x = cvRound(circles[i][0]);
 		int y = cvRound(circles[i][1]);
@@ -282,7 +364,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 			result.push_back(data);
 		}
 
-	}
+	}*/
 
 
 	return result;
@@ -394,8 +476,8 @@ bool HSVColorBuoyDetector::getWhiteLightState(IplImage *img, feature::WhiteLight
     int counter =combineAndCount(s_plane,0,dest);
 
     //Debug-GUI
-    debug_image = cvCreateImage(cvGetSize(getSplane()), 8, 1);
-	cvResize(s_plane, debug_image);
+    //debug_image = cvCreateImage(cvGetSize(getSplane()), 8, 1);
+//	cvResize(s_plane, debug_image);
 
 	//cvReleaseImage(&h_plane);
 	cvReleaseImage(&s_plane);
@@ -425,11 +507,20 @@ if(counter>20){
 
 
 // Ports:
-IplImage* HSVColorBuoyDetector::getHshaded(){
-	return h_shaded;		//wichtig
+IplImage* HSVColorBuoyDetector::getHplane(){
+	return h_plane;		//wichtig
 }
 IplImage* HSVColorBuoyDetector::getSplane(){
 	return s_plane;			//wichtig
+}
+IplImage* HSVColorBuoyDetector::getVplane(){
+	return v_plane;			//wichtig
+}
+IplImage* HSVColorBuoyDetector::getHSVDebug(){
+	return hsv_gray_debug;			//wichtig
+}
+IplImage* HSVColorBuoyDetector::getHoughDebug(){
+	return hough_debug;			//wichtig
 }
 IplImage* HSVColorBuoyDetector::getDebugImage(){
 	return debug_image;

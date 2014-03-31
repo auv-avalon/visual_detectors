@@ -45,25 +45,41 @@ class HSVColorBuoyDetector : public BuoyDetector {
       * configure the min hue value for buoy extracting in hsv space
       * @param low lower hue value for filterByHue
       */
-     void configureLowHue(int low);
 
      /**
       * configure the max hue value for buoy extracting in hsv space
       * @param low lower hue value for filterByHue
       */
-     void configureHighHue(int high);
 
      /**
       * configure the threshold using in houghspace accumulator
       * @param threshold value
       */
-     void configureHoughThreshold(int threshold) { configHoughThreshold = threshold; }
+     void configureHoughAccumulatorThresholdH(int value) { houghAccumulatorThresholdH = value; }
+     void configureHoughAccumulatorThresholdS(int value) { houghAccumulatorThresholdS = value; }
+     void configureHoughAccumulatorThresholdV(int value) { houghAccumulatorThresholdV = value; }
 
      /**
       * configure the threshold using for edge detection
       * @param threshold value
       */
-     void configureEdgeThreshold(int threshold) { configEdgeThreshold = threshold; }
+     void configureHoughEdgeThresholdH(int value) { houghEdgeThresholdH = value; }
+     void configureHoughEdgeThresholdS(int value) { houghEdgeThresholdS = value; }
+     void configureHoughEdgeThresholdV(int value) { houghEdgeThresholdV = value; }
+     void configureHoughCircleMin(int value) { houghCircleMin = value; }
+     void configureHoughCircleMax(int value) { houghCircleMax = value; }
+
+     void configureHValueMin(int value) { hValueMin = value; }
+     void configureHValueMax(int value) { hValueMax = value; }
+     void configureSValueMin(int value) { sValueMin = value; }
+     void configureSValueMax(int value) { sValueMax = value; }
+     void configureVValueMin(int value) { vValueMin = value; }
+     void configureVValueMax(int value) { vValueMax = value; }
+     //Debug configure
+     void configureDebug(bool value) { debug = value;}
+     void configureDebugGray(int value) {debug_gray = value;}
+     void configureDebugHough(bool h, bool s, bool v) {debug_h = h; debug_s = s; debug_v = v;} 
+
 
      /**
      * compute two orthogonal linear regressions in order to convert
@@ -74,11 +90,11 @@ class HSVColorBuoyDetector : public BuoyDetector {
      // TODO: more configuration methods if necessary
 
 
-     BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane);
+     BuoyFeatureVector detect(IplImage* frame, IplImage* h_plane, IplImage* v_plane);
 
 
 
-     BuoyFeatureVector buoyDetection(IplImage* img, double h_threshold, double s_threshold);
+     BuoyFeatureVector buoyDetection(IplImage* img);
 
     bool findWhiteLight(IplImage* img, feature::Buoy buoy, feature::WhiteLightSettings settings);
 
@@ -88,6 +104,8 @@ class HSVColorBuoyDetector : public BuoyDetector {
 	IplImage* getHplane();
 	IplImage* getSplane();	//wichtig
 	IplImage* getVplane();
+	IplImage* getHSVDebug();
+	IplImage* getHoughDebug();
 
 	IplImage* getDebugImage();
 
@@ -99,17 +117,39 @@ class HSVColorBuoyDetector : public BuoyDetector {
      bool getWhiteLightState(IplImage *img, feature::WhiteLightSettings settings);
 
  private:
-     int satMax;
-     int valMax;
+     //Hough configs
+     int houghAccumulatorThresholdH;
+     int houghEdgeThresholdH;
+     int houghAccumulatorThresholdS;
+     int houghEdgeThresholdS;
+     int houghAccumulatorThresholdV;
+     int houghEdgeThresholdV;
+     int houghCircleMin; 
+     int houghCircleMax; 
 
-     int configLowHue;
-     int configHighHue;
-     int configHoughThreshold;
-     int configEdgeThreshold;
+     int hValueMin;
+     int hValueMax;
+     int sValueMin;
+     int sValueMax;
+     int vValueMin;
+     int vValueMax;
+     int hSmooth;
+     int sSmooth;
+     int vSmooth;
+     //Debug
+     bool debug;
+     bool debug_gray;
+     bool debug_h;
+     bool debug_s;
+     bool debug_v;
 
      //images for debug-output
-     IplImage* h_shaded;
+     //IplImage* h_shaded;
+     IplImage* h_plane;
      IplImage* s_plane;
+     IplImage* v_plane;
+     IplImage* hsv_gray_debug;
+     IplImage* hough_debug;
      IplImage* debug_image;
      IplImage* copy;
 };
