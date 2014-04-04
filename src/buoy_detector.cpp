@@ -214,9 +214,9 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img) {
 	  hough_debug = cvCreateImage(cvGetSize(img), 8, 3);
         }
 	cvCopy(img, hough_debug);
-	cvCvtColor(hough_debug, hough_debug, CV_BGR2RGB); // Image to HSV
+	//cvCvtColor(hough_debug, hough_debug, CV_BGR2RGB); // Image to HSV
 	//Split Image to single HSV planes
-	cvCvtColor(copy, copy, CV_BGR2HSV); // Image to HSV
+	cvCvtColor(copy, copy, CV_RGB2HSV); // Image to HSV
 
         std::cout << "Creating H Plane" << std::endl;
         if(!h_plane)
@@ -235,7 +235,13 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img) {
         std::cout << "v" << std::endl;
 	cvCvtPixToPlane(copy, 0, 0, v_plane, 0);
         
-        std::cout << "gray debug" << std::endl;
+// Führt zu Speicherfehleri
+        std::cout << "hSmooth : " << hSmooth << std::endl;
+        cvSmooth(h_plane, h_plane, CV_MEDIAN, hSmooth);
+	cvSmooth(s_plane, s_plane, CV_MEDIAN, sSmooth);
+	cvSmooth(v_plane, v_plane, CV_MEDIAN, vSmooth);
+
+        std::cout << "gray debug" << debug_gray << std::endl;
         if (debug_gray == 0 && debug){
             cvCopy(h_plane, hsv_gray_debug);
         } else if (debug_gray == 1 && debug){
@@ -245,9 +251,7 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::buoyDetection(IplImage* img) {
         } else if (debug) {
             std::cerr << "Wrong Debug Gray Param" << std::endl;
         }
-	cvSmooth(h_plane, h_plane, CV_MEDIAN, hSmooth, 5);
-	cvSmooth(s_plane, s_plane, CV_MEDIAN, sSmooth, 5);
-	cvSmooth(v_plane, v_plane, CV_MEDIAN, vSmooth, 5);
+
         std::cout  << "creating binarys" << std::endl;	
 	cvThreshold(h_plane, h_plane, hValueMax, 255, CV_THRESH_TOZERO_INV);
 	cvThreshold(h_plane, h_plane, hValueMin, 255, CV_THRESH_BINARY);

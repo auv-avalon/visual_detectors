@@ -75,6 +75,9 @@ class HSVColorBuoyDetector : public BuoyDetector {
      void configureSValueMax(int value) { sValueMax = value; }
      void configureVValueMin(int value) { vValueMin = value; }
      void configureVValueMax(int value) { vValueMax = value; }
+     void configureHSmooth(int value) { hSmooth = value; }
+     void configureSSmooth(int value) { sSmooth = value; }
+     void configureVSmooth(int value) { vSmooth = value; }
      //Debug configure
      void configureDebug(bool value) { debug = value;}
      void configureDebugGray(int value) {debug_gray = value;}
@@ -138,7 +141,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
      int vSmooth;
      //Debug
      bool debug;
-     bool debug_gray;
+     int debug_gray;
      bool debug_h;
      bool debug_s;
      bool debug_v;
