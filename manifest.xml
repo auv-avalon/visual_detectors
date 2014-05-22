@@ -13,7 +13,6 @@
   <depend package="dummy-dependency-n-1" />
   <depend package="dummy-dependency-n" />
 -->
-<depend package="avalon/types" />
 <depend package="opencv" />
 <depend package="image_processing/frame_helper" />
 <!--DEPEND-ENTRY-->

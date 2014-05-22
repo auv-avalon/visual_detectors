@@ -9,7 +9,7 @@
 #ifndef VISUAL_DETECTORS__GATE_DETECTOR_H_
 #define VISUAL_DETECTORS__GATE_DETECTOR_H_
 
-#include <avalon_base/feature.h>
+#include "Types.hpp"
 #include <stddef.h>
 #include <opencv/cv.h>
 

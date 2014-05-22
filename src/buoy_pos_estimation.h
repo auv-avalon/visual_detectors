@@ -11,7 +11,7 @@
 #include <base/samples/frame.h>
 #include <frame_helper/FrameHelperTypes.h>
 #include <frame_helper/FrameHelper.h>
-#include <avalon_base/feature.h>
+#include "Types.hpp"
 #include <base/eigen.h>
 #include <vector>
 

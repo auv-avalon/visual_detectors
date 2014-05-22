@@ -155,6 +155,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
      IplImage* hough_debug;
      IplImage* debug_image;
      IplImage* copy;
+     IplImage* copy2;
 };
 
 } // namespace avalon

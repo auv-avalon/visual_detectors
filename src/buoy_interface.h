@@ -12,7 +12,7 @@
 #define VISUAL_DETECTORS__BUOY_FILTER_H_
 
 #include <vector>
-#include <avalon_base/feature.h>
+#include "Types.hpp"
 #include <opencv/cv.h>
 
 namespace avalon {

@@ -14,7 +14,7 @@
 #include <opencv/cv.h>
 #include <list>
 #include "buoy_interface.h"
-#include <avalon_base/feature.h>
+#include "Types.hpp"
 #include <stdio.h>
 #include <math.h>
 #include <vector>
