@@ -373,9 +373,15 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
         }
 
         std::vector<std::vector<cv::Vec3f> > to_merge;
-        to_merge.push_back(circles_h);
-        to_merge.push_back(circles_s);
-        to_merge.push_back(circles_v);
+        if(useH){
+            to_merge.push_back(circles_h);
+        }
+        if(useS){
+            to_merge.push_back(circles_s);
+        }
+        if(useV){
+            to_merge.push_back(circles_v);
+        }
        
         std::vector<cv::Vec3f> circles = mergeCirclesOfPlanes(to_merge);
         //std::cout << "BUOYS FOUND: " << circles.size() << std::endl;

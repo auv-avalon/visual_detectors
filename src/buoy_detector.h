@@ -83,6 +83,9 @@ class HSVColorBuoyDetector : public BuoyDetector {
      void configureDebugGray(int value) {debug_gray = value;}
      void configureDebugHough(bool h, bool s, bool v) {debug_h = h; debug_s = s; debug_v = v;} 
 
+     void configureUseH(bool value) {useH = value;}
+     void configureUseS(bool value) {useS = value;}
+     void configureUseV(bool value) {useV = value;}
 
      /**
      * compute two orthogonal linear regressions in order to convert
@@ -146,6 +149,10 @@ class HSVColorBuoyDetector : public BuoyDetector {
      bool debug_h;
      bool debug_s;
      bool debug_v;
+
+     bool useH;
+     bool useS;
+     bool useV;
 
      //images for debug-output
      //IplImage* h_shaded;
