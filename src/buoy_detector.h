@@ -118,6 +118,7 @@ class HSVColorBuoyDetector : public BuoyDetector {
      int filterBySaturation(int H, int S, int V);
      int combineAndCount(IplImage *sat,IplImage *val, IplImage *dest );
      bool getWhiteLightState(IplImage *img, feature::WhiteLightSettings settings);
+     std::vector<cv::Vec3f> mergeCirclesOfPlanes(std::vector<std::vector<cv::Vec3f> > cirles);
 
  private:
      //Hough configs
