@@ -391,46 +391,11 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
             int y = cvRound(circles[i][1]);
             int r = cvRound(circles[i][2]);
             cvCircle(hough_debug, cvPoint(x, y), r, cvScalar(255, 255, 0), 2);
+	    
+            feature::Buoy data(x, y, r);
+
+	    result.push_back(data);
         }
-
-	for (int i = 0; i < circles.size(); i++) {
-		int x = cvRound(circles[i][0]);
-		int y = cvRound(circles[i][1]);
-		int r = cvRound(circles[i][2]);
-
-                if(x < 2)
-                   x = 2;
-                if(x > s_plane->width - 2)
-                   x = s_plane->width - 2;
-                if(y < 2)
-                   y = 2;
-                if(y > s_plane->height - 2)
-                   y = s_plane->height - 2;
-		int counter = 0;
-		for (int j = x - 2; j <= x + 2; j++) {
-			for (int k = y - 2; k <= y + 2; k++) {
-				int h_value = ((uchar *) (h_plane->imageData + k
-						* h_plane->widthStep))[j];
-				if (h_value == 255) {
-
-					int s_value = ((uchar *) (s_plane->imageData + k
-							* s_plane->widthStep))[j];
-					if (h_value == s_value) {
-						counter++;
-					}
-				}
-
-			}
-		}
-
-		if (counter / 24.0 > 0.8) {
-
-			feature::Buoy data(x, y, r);
-
-			result.push_back(data);
-		}
-
-	}
 
 
 	return result;
