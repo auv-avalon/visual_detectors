@@ -397,7 +397,6 @@ std::vector<feature::Buoy> HSVColorBuoyDetector::detect(IplImage* s_plane,
 	    result.push_back(data);
         }
 
-
 	return result;
 }
 
