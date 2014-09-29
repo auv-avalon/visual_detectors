@@ -8,6 +8,10 @@
 namespace avalon {
 namespace feature {
 
+enum BuoyColor{
+  WHITE, ORANGE, RED, GREEN, UNKNOWN, NO_BUOY
+};
+  
 struct Buoy
 {
         /** x-position of the buoy in image in pixel */
@@ -30,6 +34,12 @@ struct Buoy
         
         /** real world coordinates of the buoy */
         base::Vector3d world_coord;     //x=vorne,y=links,z=oben
+        
+        /**Color of the buoy */
+        BuoyColor color;
+        
+        /**Label of the buoy */
+        int label;
 
         Buoy()
         : image_x(0), image_y(0), image_radius(0), probability(0), validation(0), time(base::Time::now()) {}
