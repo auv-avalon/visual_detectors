@@ -9,7 +9,7 @@ namespace avalon {
 namespace feature {
 
 enum BuoyColor{
-  WHITE, ORANGE, RED, GREEN, UNKNOWN, NO_BUOY
+  NO_BUOY, WHITE, ORANGE, RED, GREEN, UNKNOWN
 };
   
 struct Buoy
