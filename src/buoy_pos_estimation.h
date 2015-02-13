@@ -27,8 +27,8 @@ namespace avalon{
             //der Radius der Boje
             
             //die Brennweite der Kamera
-            static const float fx=815;		//TODO: Echte Werte heraus finden
-            static const float fy=765;
+            static constexpr float fx=815;		//TODO: Echte Werte heraus finden
+            static constexpr float fy=765;
 
             //helps estimateAuvKoordinates. calculates the position of the buoy
             //relativ to the camera of the AUV
